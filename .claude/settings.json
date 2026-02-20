@@ -6,7 +6,10 @@
       "Bash(npx next build:*)",
       "Bash(npx prisma init:*)",
       "Bash(npx prisma generate:*)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npm run db:seed:*)",
+      "Bash(npx tsx:*)"
     ]
   }
 }
