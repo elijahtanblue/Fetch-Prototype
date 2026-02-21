@@ -60,11 +60,6 @@ export default async function DashboardPage() {
               <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
                 Opt-in Status
               </th>
-              {isAdmin && (
-                <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
-                  Toggle
-                </th>
-              )}
             </tr>
           </thead>
           <tbody>
@@ -77,30 +72,29 @@ export default async function DashboardPage() {
                   {clinic.name}
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                      clinic.optedIn
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {clinic.optedIn ? "Opted In" : "Not Opted In"}
-                  </span>
-                </td>
-                {isAdmin && (
-                  <td className="px-4 py-3">
+                  {isAdmin ? (
                     <ClinicOptInToggle
                       clinicId={clinic.id}
                       initialOptedIn={clinic.optedIn}
                     />
-                  </td>
-                )}
+                  ) : (
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        clinic.optedIn
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {clinic.optedIn ? "Opted In" : "Not Opted In"}
+                    </span>
+                  )}
+                </td>
               </tr>
             ))}
             {clinics.length === 0 && (
               <tr>
                 <td
-                  colSpan={isAdmin ? 3 : 2}
+                  colSpan={2}
                   className="px-4 py-6 text-sm text-center text-[var(--kinetic-gray)]"
                 >
                   No clinics found.
