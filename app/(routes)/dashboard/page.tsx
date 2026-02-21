@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import ClinicOptInToggle from "@/components/ClinicOptInToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +16,9 @@ async function getClinics() {
 }
 
 export default async function DashboardPage() {
-  const clinics = await getClinics();
+  const [clinics, session] = await Promise.all([getClinics(), auth()]);
+  const userRole = (session?.user as unknown as Record<string, unknown>)?.role;
+  const isAdmin = userRole === "admin";
 
   return (
     <div>
@@ -56,6 +60,11 @@ export default async function DashboardPage() {
               <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
                 Opt-in Status
               </th>
+              {isAdmin && (
+                <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+                  Toggle
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -78,12 +87,20 @@ export default async function DashboardPage() {
                     {clinic.optedIn ? "Opted In" : "Not Opted In"}
                   </span>
                 </td>
+                {isAdmin && (
+                  <td className="px-4 py-3">
+                    <ClinicOptInToggle
+                      clinicId={clinic.id}
+                      initialOptedIn={clinic.optedIn}
+                    />
+                  </td>
+                )}
               </tr>
             ))}
             {clinics.length === 0 && (
               <tr>
                 <td
-                  colSpan={2}
+                  colSpan={isAdmin ? 3 : 2}
                   className="px-4 py-6 text-sm text-center text-[var(--kinetic-gray)]"
                 >
                   No clinics found.

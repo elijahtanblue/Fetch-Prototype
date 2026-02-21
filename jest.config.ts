@@ -7,6 +7,7 @@ const createJestConfig = nextJest({
 
 const config: Config = {
   testEnvironment: "jsdom",
+  setupFiles: ["<rootDir>/tests/helpers/polyfills.ts"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
   },

@@ -14,8 +14,9 @@ model Clinic {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users    User[]
-  patients Patient[]
+  users            User[]
+  patients         Patient[]
+  simulationEvents SimulationEvent[]
 }
 
 model User {
@@ -28,7 +29,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  clinic Clinic @relation(fields: [clinicId], references: [id])
+  clinic           Clinic            @relation(fields: [clinicId], references: [id])
+  simulationEvents SimulationEvent[]
 }
 
 model Patient {
@@ -41,4 +43,16 @@ model Patient {
   updatedAt   DateTime @updatedAt
 
   clinic Clinic @relation(fields: [clinicId], references: [id])
+}
+
+model SimulationEvent {
+  id        String   @id @default(cuid())
+  type      String
+  clinicId  String
+  userId    String
+  metadata  String   @default("{}")
+  createdAt DateTime @default(now())
+
+  clinic Clinic @relation(fields: [clinicId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 }
