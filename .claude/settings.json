@@ -9,7 +9,14 @@
       "Bash(npx jest:*)",
       "Bash(npx prisma migrate:*)",
       "Bash(npm run db:seed:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git remote add:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(npm audit fix:*)"
     ]
   }
 }
