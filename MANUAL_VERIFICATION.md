@@ -103,6 +103,51 @@
 
 ---
 
+## Milestone 5 — Access Policy & Shared Patient History
+
+### Access Policy (Opt-In Check)
+- [ ] Log in as `alice@cityphysio.com` (City Physio, opted in)
+- [ ] Create an episode + add a clinical update (to set `lastContributionAt`)
+- [ ] On the episode card, click "View Shared History"
+- [ ] If no other clinic has contributed updates for that patient → denial panel shows "NO_SNAPSHOT" with explanation
+- [ ] Log in as admin (`carol@summitrehab.com`), toggle City Physio opt-in **off**
+- [ ] Log back in as Alice, click "View Shared History" → denial panel shows "OPTED_OUT" with explanation
+- [ ] Toggle City Physio opt-in back **on** via admin
+
+### Access Policy (Contribution Expiry)
+- [ ] With City Physio opted in and `lastContributionAt` set to today, click "View Shared History"
+- [ ] Access decision is based on contribution recency (within 30 days = allowed if snapshot exists)
+- [ ] To test expiry: in Neon console, manually set `lastContributionAt` to 31+ days ago
+- [ ] Refresh and click "View Shared History" → denial panel shows "INACTIVE_CONTRIBUTOR" with explanation
+- [ ] Reset `lastContributionAt` to current date to restore access
+
+### Snapshot Data (Allowed Access)
+- [ ] Set up: Log in as `bob@harbourhealth.com`, create an episode for the same patient, add a clinical update
+- [ ] Log in as `alice@cityphysio.com` (ensure City Physio is opted in + recently contributed)
+- [ ] Click "View Shared History" on the episode for that patient
+- [ ] Snapshot panel shows shared records from "Harbour Health" (not from City Physio)
+- [ ] Snapshot entry shows clinic name, pain region, diagnosis, treatment modalities, red flags
+- [ ] Click "Hide Shared History" to collapse the panel
+
+### Denial Panel Rendering
+- [ ] When access is denied, panel shows amber background with "Access Denied" badge
+- [ ] Denial panel shows the reason code (e.g., "OPTED_OUT")
+- [ ] Denial panel shows a human-readable explanation
+
+### API Validation
+- [ ] `GET /api/snapshots/<patientId>` without auth → returns 401
+- [ ] `GET /api/snapshots/<patientId>` with opted-out clinic → returns `accessDecision: "denied"`, `reasonCode: "OPTED_OUT"`
+- [ ] `GET /api/snapshots/<patientId>` with expired contribution → returns `reasonCode: "INACTIVE_CONTRIBUTOR"`
+- [ ] `GET /api/snapshots/<patientId>` with no shared data → returns `reasonCode: "NO_SNAPSHOT"`
+- [ ] `GET /api/snapshots/<patientId>` with all conditions met → returns `accessDecision: "allowed"` + `snapshot` array
+
+### Architecture Verification
+- [ ] `domain/policy/access.ts` has NO Prisma imports
+- [ ] Snapshot endpoint imports and calls `evaluateAccess` from `domain/policy/access`
+- [ ] No other file reimplements access decision logic (no inline optedIn/lastContributionAt checks)
+
+---
+
 ## Seed Data Reference
 | Entity  | Count | Details |
 |---------|-------|---------|

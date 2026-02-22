@@ -17,6 +17,9 @@
       "Bash(git pull:*)",
       "Bash(git stash:*)",
       "Bash(npm audit fix:*)"
+    ],
+    "additionalDirectories": [
+      "d:\\Vibe Coded Projects\\Heidi Project\\app\\api\\snapshots"
     ]
   }
 }

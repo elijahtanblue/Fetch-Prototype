@@ -3,6 +3,7 @@
 import { useState } from "react";
 import CreateEpisodeForm from "./CreateEpisodeForm";
 import AddUpdateForm from "./AddUpdateForm";
+import PatientSnapshot from "./PatientSnapshot";
 
 interface Patient {
   id: string;
@@ -22,6 +23,7 @@ interface ClinicalUpdate {
 
 interface Episode {
   id: string;
+  patientId: string;
   reason: string;
   startDate: string;
   createdAt: string;
@@ -130,6 +132,11 @@ export default function EpisodesSection({
               <AddUpdateForm
                 episodeId={episode.id}
                 onCreated={refreshEpisodes}
+              />
+
+              <PatientSnapshot
+                patientId={episode.patientId}
+                patientName={`${episode.patient.firstName} ${episode.patient.lastName}`}
               />
             </div>
           ))}
