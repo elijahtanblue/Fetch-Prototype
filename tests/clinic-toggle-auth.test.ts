@@ -1,8 +1,8 @@
 /**
  * API Auth Tests for PATCH /api/clinics/[id]
  *
- * Verifies that non-admin users are blocked (403) and
- * unauthenticated requests return 401. Admin users are allowed.
+ * Verifies that unauthenticated requests return 401.
+ * All authenticated users (clinicians and admins) can toggle opt-in.
  */
 
 let mockSession: Record<string, unknown> | null = null;
@@ -52,7 +52,7 @@ describe("PATCH /api/clinics/[id] - Authorization", () => {
     expect(response.status).toBe(401);
   });
 
-  test("returns 403 when user is a clinician (non-admin)", async () => {
+  test("returns 200 when user is a clinician (all users can toggle)", async () => {
     mockSession = {
       user: { id: "u1", role: "clinician", clinicId: "c1" },
     };
@@ -63,7 +63,7 @@ describe("PATCH /api/clinics/[id] - Authorization", () => {
     const response = await PATCH(request, {
       params: Promise.resolve({ id: "c1" }),
     });
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(200);
   });
 
   test("returns 200 when user is an admin", async () => {

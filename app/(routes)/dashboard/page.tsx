@@ -19,13 +19,11 @@ async function getClinics() {
 export default async function DashboardPage() {
   const session = await auth();
   const user = session?.user as unknown as Record<string, unknown>;
-  const isAdmin = user?.role === "admin";
   const clinicId = user?.clinicId as string;
 
   const [clinics, patients, episodes] = await Promise.all([
     getClinics(),
     prisma.patient.findMany({
-      where: { clinicId },
       select: { id: true, firstName: true, lastName: true },
       orderBy: { lastName: "asc" },
     }),
@@ -110,22 +108,10 @@ export default async function DashboardPage() {
                   {clinic.name}
                 </td>
                 <td className="px-4 py-3">
-                  {isAdmin ? (
-                    <ClinicOptInToggle
-                      clinicId={clinic.id}
-                      initialOptedIn={clinic.optedIn}
-                    />
-                  ) : (
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        clinic.optedIn
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {clinic.optedIn ? "Opted In" : "Not Opted In"}
-                    </span>
-                  )}
+                  <ClinicOptInToggle
+                    clinicId={clinic.id}
+                    initialOptedIn={clinic.optedIn}
+                  />
                 </td>
               </tr>
             ))}

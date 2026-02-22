@@ -106,13 +106,13 @@
 ## Milestone 5 — Access Policy & Shared Patient History
 
 ### Access Policy (Opt-In Check)
-- [ ] Log in as `alice@cityphysio.com` (City Physio, opted in)
+- [ ] Log in as `edsun@diversus.com` (City Physio, opted in)
 - [ ] Create an episode + add a clinical update (to set `lastContributionAt`)
 - [ ] On the episode card, click "View Shared History"
 - [ ] If no other clinic has contributed updates for that patient → denial panel shows "NO_SNAPSHOT" with explanation
-- [ ] Log in as admin (`carol@summitrehab.com`), toggle City Physio opt-in **off**
-- [ ] Log back in as Alice, click "View Shared History" → denial panel shows "OPTED_OUT" with explanation
-- [ ] Toggle City Physio opt-in back **on** via admin
+- [ ] Toggle City Physio opt-in **off** (any user can toggle)
+- [ ] Click "View Shared History" → denial panel shows "OPTED_OUT" with explanation
+- [ ] Toggle City Physio opt-in back **on**
 
 ### Access Policy (Contribution Expiry)
 - [ ] With City Physio opted in and `lastContributionAt` set to today, click "View Shared History"
@@ -122,8 +122,8 @@
 - [ ] Reset `lastContributionAt` to current date to restore access
 
 ### Snapshot Data (Allowed Access)
-- [ ] Set up: Log in as `bob@harbourhealth.com`, create an episode for the same patient, add a clinical update
-- [ ] Log in as `alice@cityphysio.com` (ensure City Physio is opted in + recently contributed)
+- [ ] Set up: Log in as `edzhang@diversus.com`, create an episode for Winston Liang, add a clinical update
+- [ ] Log in as `edsun@diversus.com` (ensure City Physio is opted in + recently contributed)
 - [ ] Click "View Shared History" on the episode for that patient
 - [ ] Snapshot panel shows shared records from "Harbour Health" (not from City Physio)
 - [ ] Snapshot entry shows clinic name, pain region, diagnosis, treatment modalities, red flags
@@ -152,5 +152,5 @@
 | Entity  | Count | Details |
 |---------|-------|---------|
 | Clinics | 3     | City Physio (opted in), Harbour Health (not opted in), Summit Rehabilitation (opted in) |
-| Users   | 3     | alice@cityphysio.com (clinician), bob@harbourhealth.com (clinician), carol@summitrehab.com (admin) — all password: `password123` |
-| Patients| 1     | John Smith, DOB 1985-03-15, assigned to City Physio |
+| Users   | 3     | edsun@diversus.com (clinician, City Physio), edzhang@diversus.com (clinician, Harbour Health), elijah@admin.com (admin, Summit Rehabilitation) — all password: `password123` |
+| Patients| 1     | Winston Liang, DOB 1985-03-15, visible to all clinicians |

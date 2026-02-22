@@ -31,7 +31,7 @@ export default function ClinicOptInToggle({
     <div className="flex items-center gap-3">
       {/* Status badge — updates instantly with toggle state */}
       <span
-        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+        className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium w-24 ${
           optedIn ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
         }`}
       >

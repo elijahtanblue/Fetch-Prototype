@@ -47,7 +47,7 @@ export default function Navbar() {
 
           {/* Sign Out */}
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
             className="text-sm text-[var(--kinetic-gray)] hover:text-[var(--kinetic-dark)] transition-colors"
           >
             Sign out

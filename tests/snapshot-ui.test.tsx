@@ -20,7 +20,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
 
   test("renders View Shared History button initially", () => {
     render(
-      <PatientSnapshot patientId="p1" patientName="John Smith" />
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
     );
     expect(screen.getByText("View Shared History")).toBeInTheDocument();
   });
@@ -36,7 +36,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="John Smith" />
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -61,7 +61,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="John Smith" />
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -82,7 +82,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="John Smith" />
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -115,7 +115,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="John Smith" />
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -150,13 +150,13 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="John Smith" />
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Shared history for John Smith/)
+        screen.getByText(/Shared history for Winston Liang/)
       ).toBeInTheDocument();
     });
   });
@@ -171,7 +171,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="John Smith" />
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
     );
 
     fireEvent.click(screen.getByText("View Shared History"));

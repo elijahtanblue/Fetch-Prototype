@@ -30,9 +30,9 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      email: "alice@cityphysio.com",
+      email: "edsun@diversus.com",
       password: passwordHash,
-      name: "Alice Johnson",
+      name: "Ed Sun",
       role: "clinician",
       clinicId: clinicA.id,
     },
@@ -40,9 +40,9 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      email: "bob@harbourhealth.com",
+      email: "edzhang@diversus.com",
       password: passwordHash,
-      name: "Bob Williams",
+      name: "Ed Zhang",
       role: "clinician",
       clinicId: clinicB.id,
     },
@@ -50,19 +50,19 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      email: "carol@summitrehab.com",
+      email: "elijah@admin.com",
       password: passwordHash,
-      name: "Carol Martinez",
+      name: "Elijah Admin",
       role: "admin",
       clinicId: clinicC.id,
     },
   });
 
-  // Create 1 patient
+  // Create 1 shared patient visible to all clinicians
   await prisma.patient.create({
     data: {
-      firstName: "John",
-      lastName: "Smith",
+      firstName: "Winston",
+      lastName: "Liang",
       dateOfBirth: new Date("1985-03-15"),
       clinicId: clinicA.id,
     },

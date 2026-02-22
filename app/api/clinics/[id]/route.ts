@@ -16,10 +16,6 @@ export async function PATCH(
 
   const user = session.user as unknown as Record<string, unknown>;
 
-  if (user.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden: admin role required" }, { status: 403 });
-  }
-
   const { id } = await params;
 
   const clinic = await prisma.clinic.findUnique({ where: { id } });
