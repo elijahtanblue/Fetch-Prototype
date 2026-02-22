@@ -66,6 +66,43 @@
 
 ---
 
+## Milestone 3 — Episodes & Clinical Updates
+
+### Create Episode
+- [ ] Log in as clinician (`alice@cityphysio.com` / `password123`)
+- [ ] Dashboard shows an "Episodes" section with a "+ Create Episode" button
+- [ ] Click "+ Create Episode" — form expands with Patient, Reason, Start Date fields
+- [ ] Patient dropdown shows "John Smith"
+- [ ] Fill in reason "Lower back pain assessment" and click "Create Episode"
+- [ ] Episode appears in the list showing patient name, reason, and start date
+- [ ] Click "Cancel" — form collapses without creating an episode
+
+### Add Clinical Update
+- [ ] On an existing episode, click "+ Add Update"
+- [ ] Form expands with Pain Region, Diagnosis, Treatment Modalities, Red Flags, Notes fields
+- [ ] Fill in: Pain Region = "Lower back, L4-L5", Diagnosis = "Lumbar disc herniation", Treatment = "Manual therapy, exercise prescription"
+- [ ] Check "Red Flags Present" checkbox
+- [ ] Click "Save Update" — update appears under the episode with red flag badge
+- [ ] Add another update without red flags — appears without red flag badge
+
+### API Validation
+- [ ] `POST /api/episodes` without auth — returns 401
+- [ ] `POST /api/episodes` with missing `patientId` — returns 400
+- [ ] `POST /api/episodes` with non-existent patient — returns 404
+- [ ] `POST /api/updates` without auth — returns 401
+- [ ] `POST /api/updates` with missing `painRegion` — returns 400
+- [ ] `POST /api/updates` with non-existent episode — returns 404
+
+### Contribution Timestamp
+- [ ] After adding a clinical update, verify in Neon console that the clinic's `lastContributionAt` is set
+
+### SimulationEvents
+- [ ] After creating an episode, verify `SimulationEvent` with `type` = `VISIT` exists
+- [ ] After adding a clinical update, verify `SimulationEvent` with `type` = `CLINICAL_UPDATE` exists
+- [ ] Both events have correct `clinicId`, `userId`, and `metadata`
+
+---
+
 ## Seed Data Reference
 | Entity  | Count | Details |
 |---------|-------|---------|

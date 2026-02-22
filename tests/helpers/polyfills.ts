@@ -38,15 +38,17 @@ if (typeof globalThis.Request === "undefined") {
     url: string;
     method: string;
     headers: Headers;
+    private _body: string;
 
     constructor(url: string | URL, init?: RequestInit) {
       this.url = typeof url === "string" ? url : url.toString();
       this.method = init?.method ?? "GET";
       this.headers = new Headers(init?.headers);
+      this._body = (init?.body as string) ?? "";
     }
 
     async json() {
-      return {};
+      return this._body ? JSON.parse(this._body) : {};
     }
   }
 

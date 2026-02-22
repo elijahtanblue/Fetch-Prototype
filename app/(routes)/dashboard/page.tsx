@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import ClinicOptInToggle from "@/components/ClinicOptInToggle";
+import EpisodesSection from "@/components/EpisodesSection";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +17,38 @@ async function getClinics() {
 }
 
 export default async function DashboardPage() {
-  const [clinics, session] = await Promise.all([getClinics(), auth()]);
-  const userRole = (session?.user as unknown as Record<string, unknown>)?.role;
-  const isAdmin = userRole === "admin";
+  const session = await auth();
+  const user = session?.user as unknown as Record<string, unknown>;
+  const isAdmin = user?.role === "admin";
+  const clinicId = user?.clinicId as string;
+
+  const [clinics, patients, episodes] = await Promise.all([
+    getClinics(),
+    prisma.patient.findMany({
+      where: { clinicId },
+      select: { id: true, firstName: true, lastName: true },
+      orderBy: { lastName: "asc" },
+    }),
+    prisma.episode.findMany({
+      where: { clinicId },
+      include: {
+        patient: { select: { firstName: true, lastName: true } },
+        clinicalUpdates: { orderBy: { createdAt: "desc" } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  // Serialize dates for client component
+  const serializedEpisodes = episodes.map((ep) => ({
+    ...ep,
+    startDate: ep.startDate.toISOString(),
+    createdAt: ep.createdAt.toISOString(),
+    clinicalUpdates: ep.clinicalUpdates.map((cu) => ({
+      ...cu,
+      createdAt: cu.createdAt.toISOString(),
+    })),
+  }));
 
   return (
     <div>
@@ -42,6 +72,14 @@ export default async function DashboardPage() {
             Privileges earned through sharing structured patient summaries.
           </p>
         </div>
+      </div>
+
+      {/* Episodes Section */}
+      <div className="mb-6">
+        <EpisodesSection
+          initialEpisodes={serializedEpisodes}
+          patients={patients}
+        />
       </div>
 
       {/* Clinics Table */}

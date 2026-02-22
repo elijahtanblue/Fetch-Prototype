@@ -8,14 +8,17 @@ datasource db {
 }
 
 model Clinic {
-  id        String   @id @default(cuid())
-  name      String
-  optedIn   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  name               String
+  optedIn            Boolean   @default(false)
+  lastContributionAt DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   users            User[]
   patients         Patient[]
+  episodes         Episode[]
+  clinicalUpdates  ClinicalUpdate[]
   simulationEvents SimulationEvent[]
 }
 
@@ -30,6 +33,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   clinic           Clinic            @relation(fields: [clinicId], references: [id])
+  episodes         Episode[]
+  clinicalUpdates  ClinicalUpdate[]
   simulationEvents SimulationEvent[]
 }
 
@@ -42,7 +47,40 @@ model Patient {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  clinic Clinic @relation(fields: [clinicId], references: [id])
+  clinic   Clinic    @relation(fields: [clinicId], references: [id])
+  episodes Episode[]
+}
+
+model Episode {
+  id        String   @id @default(cuid())
+  patientId String
+  clinicId  String
+  userId    String
+  reason    String
+  startDate DateTime
+  createdAt DateTime @default(now())
+
+  patient         Patient          @relation(fields: [patientId], references: [id])
+  clinic          Clinic           @relation(fields: [clinicId], references: [id])
+  user            User             @relation(fields: [userId], references: [id])
+  clinicalUpdates ClinicalUpdate[]
+}
+
+model ClinicalUpdate {
+  id                  String   @id @default(cuid())
+  episodeId           String
+  clinicId            String
+  userId              String
+  painRegion          String
+  diagnosis           String
+  treatmentModalities String
+  redFlags            Boolean  @default(false)
+  notes               String   @default("")
+  createdAt           DateTime @default(now())
+
+  episode Episode @relation(fields: [episodeId], references: [id])
+  clinic  Clinic  @relation(fields: [clinicId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
 }
 
 model SimulationEvent {
