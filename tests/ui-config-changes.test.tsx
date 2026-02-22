@@ -1,16 +1,16 @@
 /**
  * UI tests for:
  * 3. Opt-in badge has fixed width (w-24) for alignment
- * 4. Sign-out uses window.location.origin + '/login'
+ * 4. Sign-out clears session then redirects to origin/login
  */
 
 import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ClinicOptInToggle from "@/components/ClinicOptInToggle";
 import Navbar from "@/components/Navbar";
 
 // ─── Mock next-auth/react for Navbar ─────────────────────────────────────────
-const mockSignOut = jest.fn();
+const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock("next-auth/react", () => ({
   signOut: (...args: unknown[]) => mockSignOut(...args),
 }));
@@ -47,35 +47,37 @@ describe("ClinicOptInToggle - Badge Alignment", () => {
   });
 });
 
-describe("Navbar - Sign-out uses window.location.origin", () => {
+describe("Navbar - Sign-out behavior", () => {
   beforeEach(() => {
-    mockSignOut.mockClear();
+    mockSignOut.mockClear().mockResolvedValue(undefined);
   });
 
-  test("sign-out button calls signOut with callbackUrl ending in /login", () => {
+  test("sign-out button has prominent gold styling", () => {
+    render(<Navbar />);
+    const btn = screen.getByText("Sign out");
+    expect(btn.className).toContain("bg-[var(--kinetic-gold)]");
+    expect(btn.className).toContain("text-white");
+  });
+
+  test("sign-out calls signOut with redirect: false", async () => {
     render(<Navbar />);
     fireEvent.click(screen.getByText("Sign out"));
 
-    expect(mockSignOut).toHaveBeenCalledTimes(1);
-    const args = mockSignOut.mock.calls[0][0] as { callbackUrl: string };
-    expect(args.callbackUrl).toMatch(/\/login$/);
+    await waitFor(() => {
+      expect(mockSignOut).toHaveBeenCalledWith({ redirect: false });
+    });
   });
 
-  test("sign-out callbackUrl is window.location.origin + /login", () => {
+  test("sign-out does NOT use callbackUrl (uses manual redirect instead)", async () => {
     render(<Navbar />);
     fireEvent.click(screen.getByText("Sign out"));
 
-    const args = mockSignOut.mock.calls[0][0] as { callbackUrl: string };
-    expect(args.callbackUrl).toBe(`${window.location.origin}/login`);
-  });
-
-  test("sign-out does NOT use a hardcoded relative /login path", () => {
-    render(<Navbar />);
-    fireEvent.click(screen.getByText("Sign out"));
-
-    const args = mockSignOut.mock.calls[0][0] as { callbackUrl: string };
-    // Must be an absolute URL built from origin, not just '/login'
-    expect(args.callbackUrl).not.toBe("/login");
-    expect(args.callbackUrl.startsWith("http")).toBe(true);
+    await waitFor(() => {
+      const args = mockSignOut.mock.calls[0][0] as Record<string, unknown>;
+      // redirect: false means we handle the redirect ourselves
+      expect(args.redirect).toBe(false);
+      // Should NOT have callbackUrl since we redirect manually
+      expect(args.callbackUrl).toBeUndefined();
+    });
   });
 });

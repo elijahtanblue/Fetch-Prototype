@@ -47,8 +47,11 @@ export default function Navbar() {
 
           {/* Sign Out */}
           <button
-            onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
-            className="text-sm text-[var(--kinetic-gray)] hover:text-[var(--kinetic-dark)] transition-colors"
+            onClick={async () => {
+              await signOut({ redirect: false });
+              window.location.href = `${window.location.origin}/login`;
+            }}
+            className="px-3 py-1.5 text-sm font-medium text-white bg-[var(--kinetic-gold)] rounded-md hover:bg-[var(--kinetic-gold-hover)] transition-colors"
           >
             Sign out
           </button>

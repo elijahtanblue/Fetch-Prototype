@@ -36,6 +36,9 @@ jest.mock("../lib/generated/prisma/client", () => ({
         seedCreateCalls.push({ model: "patient", data });
       }),
     },
+    clinicalUpdate: { deleteMany: jest.fn(async () => {}) },
+    episode: { deleteMany: jest.fn(async () => {}) },
+    simulationEvent: { deleteMany: jest.fn(async () => {}) },
     $disconnect: jest.fn(),
   })),
 }));
@@ -81,9 +84,24 @@ describe("Seed Credentials", () => {
     expect(emails).not.toContain("carol@summitrehab.com");
   });
 
-  test("patient is Winston Liang (not John Smith)", () => {
-    const patient = seedCreateCalls.find((c) => c.model === "patient");
-    expect(patient?.data.firstName).toBe("Winston");
-    expect(patient?.data.lastName).toBe("Liang");
+  test("seed includes Winston Liang patient", () => {
+    const patients = seedCreateCalls.filter((c) => c.model === "patient");
+    const winston = patients.find(
+      (p) => p.data.firstName === "Winston" && p.data.lastName === "Liang"
+    );
+    expect(winston).toBeDefined();
+  });
+
+  test("seed includes John Smith patient", () => {
+    const patients = seedCreateCalls.filter((c) => c.model === "patient");
+    const john = patients.find(
+      (p) => p.data.firstName === "John" && p.data.lastName === "Smith"
+    );
+    expect(john).toBeDefined();
+  });
+
+  test("seed creates exactly 2 patients", () => {
+    const patients = seedCreateCalls.filter((c) => c.model === "patient");
+    expect(patients).toHaveLength(2);
   });
 });

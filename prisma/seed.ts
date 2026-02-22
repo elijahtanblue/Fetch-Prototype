@@ -7,7 +7,10 @@ const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Clean existing data (idempotent re-seed)
+  // Clean existing data (idempotent re-seed) — delete in dependency order
+  await prisma.clinicalUpdate.deleteMany();
+  await prisma.episode.deleteMany();
+  await prisma.simulationEvent.deleteMany();
   await prisma.patient.deleteMany();
   await prisma.user.deleteMany();
   await prisma.clinic.deleteMany();
@@ -58,17 +61,26 @@ async function main() {
     },
   });
 
-  // Create 1 shared patient visible to all clinicians
+  // Create 2 patients
   await prisma.patient.create({
     data: {
-      firstName: "Winston",
-      lastName: "Liang",
+      firstName: "John",
+      lastName: "Smith",
       dateOfBirth: new Date("1985-03-15"),
       clinicId: clinicA.id,
     },
   });
 
-  console.log("Seed completed: 3 clinics, 3 users, 1 patient.");
+  await prisma.patient.create({
+    data: {
+      firstName: "Winston",
+      lastName: "Liang",
+      dateOfBirth: new Date("2001-08-31"),
+      clinicId: clinicA.id,
+    },
+  });
+
+  console.log("Seed completed: 3 clinics, 3 users, 2 patients.");
 }
 
 main()

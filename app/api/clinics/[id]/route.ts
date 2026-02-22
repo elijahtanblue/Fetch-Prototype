@@ -18,6 +18,14 @@ export async function PATCH(
 
   const { id } = await params;
 
+  // Clinicians can only toggle their own clinic; admins can toggle any
+  if (user.role !== "admin" && user.clinicId !== id) {
+    return NextResponse.json(
+      { error: "Forbidden: you can only toggle your own clinic" },
+      { status: 403 }
+    );
+  }
+
   const clinic = await prisma.clinic.findUnique({ where: { id } });
 
   if (!clinic) {

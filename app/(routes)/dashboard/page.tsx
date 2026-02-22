@@ -20,6 +20,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const user = session?.user as unknown as Record<string, unknown>;
   const clinicId = user?.clinicId as string;
+  const isAdmin = user?.role === "admin";
 
   const [clinics, patients, episodes] = await Promise.all([
     getClinics(),
@@ -108,10 +109,22 @@ export default async function DashboardPage() {
                   {clinic.name}
                 </td>
                 <td className="px-4 py-3">
-                  <ClinicOptInToggle
-                    clinicId={clinic.id}
-                    initialOptedIn={clinic.optedIn}
-                  />
+                  {isAdmin || clinic.id === clinicId ? (
+                    <ClinicOptInToggle
+                      clinicId={clinic.id}
+                      initialOptedIn={clinic.optedIn}
+                    />
+                  ) : (
+                    <span
+                      className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium w-24 ${
+                        clinic.optedIn
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {clinic.optedIn ? "Opted In" : "Not Opted In"}
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}

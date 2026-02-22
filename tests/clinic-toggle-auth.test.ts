@@ -1,8 +1,11 @@
 /**
  * API Auth Tests for PATCH /api/clinics/[id]
  *
- * Verifies that unauthenticated requests return 401.
- * All authenticated users (clinicians and admins) can toggle opt-in.
+ * Verifies:
+ * - Unauthenticated → 401
+ * - Clinician toggling OWN clinic → 200
+ * - Clinician toggling OTHER clinic → 403
+ * - Admin toggling any clinic → 200
  */
 
 let mockSession: Record<string, unknown> | null = null;
@@ -52,7 +55,7 @@ describe("PATCH /api/clinics/[id] - Authorization", () => {
     expect(response.status).toBe(401);
   });
 
-  test("returns 200 when user is a clinician (all users can toggle)", async () => {
+  test("returns 200 when clinician toggles their OWN clinic", async () => {
     mockSession = {
       user: { id: "u1", role: "clinician", clinicId: "c1" },
     };
@@ -66,7 +69,21 @@ describe("PATCH /api/clinics/[id] - Authorization", () => {
     expect(response.status).toBe(200);
   });
 
-  test("returns 200 when user is an admin", async () => {
+  test("returns 403 when clinician toggles ANOTHER clinic", async () => {
+    mockSession = {
+      user: { id: "u1", role: "clinician", clinicId: "c1" },
+    };
+    const { PATCH } = await import("@/app/api/clinics/[id]/route");
+    const request = new Request("http://localhost/api/clinics/c2", {
+      method: "PATCH",
+    });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "c2" }),
+    });
+    expect(response.status).toBe(403);
+  });
+
+  test("returns 200 when admin toggles any clinic", async () => {
     mockSession = {
       user: { id: "u3", role: "admin", clinicId: "c3" },
     };

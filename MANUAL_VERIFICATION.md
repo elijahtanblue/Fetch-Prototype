@@ -16,19 +16,18 @@
 - [ ] Login page shows "Kinetic" branding with gold logo
 - [ ] Login page shows "Shared Patient History" subtitle
 - [ ] Enter invalid credentials — should show "Invalid email or password." error
-- [ ] Enter valid credentials (`alice@cityphysio.com` / `password123`) — should redirect to `/dashboard`
+- [ ] Enter valid credentials (`edsun@diversus.com` / `password123`) — should redirect to `/dashboard`
 
 ### Dashboard (Clinician View)
 - [ ] Dashboard shows "Shared Patient History" heading
 - [ ] Dashboard shows gold "Contribute Updates to Unlock Patient History" banner
 - [ ] Dashboard shows a "Clinics" table with 3 rows
 - [ ] Each clinic row shows the clinic name and opt-in status badge
-- [ ] "City Physio" shows "Opted In" (green badge)
-- [ ] "Harbour Health" shows "Not Opted In" (gray badge)
-- [ ] "Summit Rehabilitation" shows "Opted In" (green badge)
-- [ ] **No toggle column** is visible for clinician users
+- [ ] "City Physio" shows "Opted In" (green badge) with toggle (own clinic)
+- [ ] "Harbour Health" shows "Not Opted In" (gray badge, no toggle — not own clinic)
+- [ ] "Summit Rehabilitation" shows "Opted In" (green badge, no toggle — not own clinic)
 - [ ] Navbar shows "Kinetic" logo and "Dashboard" link (active/highlighted)
-- [ ] "Sign out" button in navbar logs the user out and redirects to `/login`
+- [ ] "Sign out" is a gold button in the navbar — clicking it clears session and redirects to login page
 
 ### Data Persistence
 - [ ] After login + viewing dashboard, stop the dev server (`Ctrl+C`)
@@ -37,26 +36,25 @@
 
 ---
 
-## Milestone 2 — Admin Opt-In Toggle
+## Milestone 2 — Opt-In Toggle
 
-### Admin Toggle (Admin View)
-- [ ] Sign out and log in as admin: `carol@summitrehab.com` / `password123`
-- [ ] Dashboard shows a **Toggle column** with toggle switches for each clinic
-- [ ] "City Physio" toggle is **on** (green)
-- [ ] "Harbour Health" toggle is **off** (gray)
-- [ ] "Summit Rehabilitation" toggle is **on** (green)
+### Clinician Toggle (Own Clinic Only)
+- [ ] Log in as `edsun@diversus.com` (City Physio clinician)
+- [ ] Toggle is visible ONLY on "City Physio" row (own clinic)
+- [ ] Other clinics show read-only status badge (no toggle)
+- [ ] Click toggle on City Physio — status updates dynamically
+- [ ] Refresh — toggle state persists
 
-### Toggle Behavior
-- [ ] Click the toggle for "Harbour Health" — toggle turns green (opted in)
-- [ ] The status badge text updates (no page reload needed)
-- [ ] Refresh the page — "Harbour Health" still shows as "Opted In"
-- [ ] Click the toggle again — turns gray (not opted in)
-- [ ] Refresh — "Harbour Health" shows "Not Opted In"
+### Admin Toggle (All Clinics)
+- [ ] Log in as `elijah@admin.com` (admin)
+- [ ] Toggle switches visible on ALL 3 clinics
+- [ ] Can toggle any clinic's opt-in status
 
 ### Authorization
-- [ ] Log in as clinician (`alice@cityphysio.com`) — no Toggle column visible
-- [ ] Manually call `PATCH /api/clinics/<id>` without auth — returns 401
-- [ ] Manually call `PATCH /api/clinics/<id>` as clinician — returns 403
+- [ ] `PATCH /api/clinics/<id>` without auth → 401
+- [ ] `PATCH /api/clinics/<id>` as clinician for OTHER clinic → 403
+- [ ] `PATCH /api/clinics/<id>` as clinician for OWN clinic → 200
+- [ ] `PATCH /api/clinics/<id>` as admin for ANY clinic → 200
 
 ### SimulationEvent
 - [ ] After toggling, verify in Neon console that `SimulationEvent` table has a row with:
@@ -69,10 +67,10 @@
 ## Milestone 3 — Episodes & Clinical Updates
 
 ### Create Episode
-- [ ] Log in as clinician (`alice@cityphysio.com` / `password123`)
+- [ ] Log in as `edsun@diversus.com`
 - [ ] Dashboard shows an "Episodes" section with a "+ Create Episode" button
 - [ ] Click "+ Create Episode" — form expands with Patient, Reason, Start Date fields
-- [ ] Patient dropdown shows "John Smith"
+- [ ] Patient dropdown shows "John Smith" and "Winston Liang"
 - [ ] Fill in reason "Lower back pain assessment" and click "Create Episode"
 - [ ] Episode appears in the list showing patient name, reason, and start date
 - [ ] Click "Cancel" — form collapses without creating an episode
@@ -110,7 +108,7 @@
 - [ ] Create an episode + add a clinical update (to set `lastContributionAt`)
 - [ ] On the episode card, click "View Shared History"
 - [ ] If no other clinic has contributed updates for that patient → denial panel shows "NO_SNAPSHOT" with explanation
-- [ ] Toggle City Physio opt-in **off** (any user can toggle)
+- [ ] Toggle City Physio opt-in **off** (own clinic toggle)
 - [ ] Click "View Shared History" → denial panel shows "OPTED_OUT" with explanation
 - [ ] Toggle City Physio opt-in back **on**
 
@@ -148,9 +146,17 @@
 
 ---
 
+## Sign-Out Verification
+- [ ] "Sign out" button is gold/prominent in the navbar (not plain text)
+- [ ] Clicking "Sign out" clears the session and redirects to the current deployment's `/login` page
+- [ ] On Vercel deployment (e.g. `https://heidi-project-e706qpp4m-elijahtanblues-projects.vercel.app`), sign-out redirects to the same domain's `/login`
+- [ ] On localhost, sign-out redirects to `http://localhost:3000/login`
+
+---
+
 ## Seed Data Reference
 | Entity  | Count | Details |
 |---------|-------|---------|
 | Clinics | 3     | City Physio (opted in), Harbour Health (not opted in), Summit Rehabilitation (opted in) |
 | Users   | 3     | edsun@diversus.com (clinician, City Physio), edzhang@diversus.com (clinician, Harbour Health), elijah@admin.com (admin, Summit Rehabilitation) — all password: `password123` |
-| Patients| 1     | Winston Liang, DOB 1985-03-15, visible to all clinicians |
+| Patients| 2     | John Smith (DOB 1985-03-15), Winston Liang (DOB 1990-07-22) — both visible to all clinicians |

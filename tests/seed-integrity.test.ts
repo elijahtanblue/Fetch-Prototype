@@ -45,6 +45,21 @@ const mockPrismaClient = {
       createCalls.push({ model: "patient", data });
     }),
   },
+  clinicalUpdate: {
+    deleteMany: jest.fn(async () => {
+      deleteCalls.push("clinicalUpdate");
+    }),
+  },
+  episode: {
+    deleteMany: jest.fn(async () => {
+      deleteCalls.push("episode");
+    }),
+  },
+  simulationEvent: {
+    deleteMany: jest.fn(async () => {
+      deleteCalls.push("simulationEvent");
+    }),
+  },
   $disconnect: jest.fn(),
 };
 
@@ -65,8 +80,15 @@ describe("Seed Integrity", () => {
     await import("../prisma/seed");
   });
 
-  test("should clean data in correct order (patient → user → clinic)", () => {
-    expect(deleteCalls).toEqual(["patient", "user", "clinic"]);
+  test("should clean data in correct dependency order", () => {
+    expect(deleteCalls).toEqual([
+      "clinicalUpdate",
+      "episode",
+      "simulationEvent",
+      "patient",
+      "user",
+      "clinic",
+    ]);
   });
 
   test("should create exactly 3 clinics", () => {
@@ -79,9 +101,9 @@ describe("Seed Integrity", () => {
     expect(userCreates).toHaveLength(3);
   });
 
-  test("should create exactly 1 patient", () => {
+  test("should create exactly 2 patients", () => {
     const patientCreates = createCalls.filter((c) => c.model === "patient");
-    expect(patientCreates).toHaveLength(1);
+    expect(patientCreates).toHaveLength(2);
   });
 
   test("each user should reference a valid clinic ID", () => {
