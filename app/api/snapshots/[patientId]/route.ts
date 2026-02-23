@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { evaluateAccess } from "@/domain/policy/access";
+import { getSharedUpdatesForPatient } from "@/domain/services/snapshot";
 
 export const dynamic = "force-dynamic";
 
@@ -29,20 +30,12 @@ export async function GET(
     return NextResponse.json({ error: "Clinic not found" }, { status: 404 });
   }
 
-  // Fetch snapshot data: clinical updates from OTHER clinics for this patient
-  const sharedUpdates = await prisma.clinicalUpdate.findMany({
-    where: {
-      episode: { patientId },
-      clinicId: { not: clinicId },
-    },
-    include: {
-      episode: {
-        select: { reason: true, startDate: true },
-      },
-      clinic: { select: { name: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  // Fetch snapshot data via shared service
+  const sharedUpdates = await getSharedUpdatesForPatient(
+    prisma,
+    patientId,
+    clinicId
+  );
 
   const hasSnapshot = sharedUpdates.length > 0;
 
@@ -62,22 +55,8 @@ export async function GET(
     });
   }
 
-  // Build snapshot from shared clinical updates
-  const snapshot = sharedUpdates.map((update) => ({
-    id: update.id,
-    clinicName: update.clinic.name,
-    episodeReason: update.episode.reason,
-    episodeStartDate: update.episode.startDate,
-    painRegion: update.painRegion,
-    diagnosis: update.diagnosis,
-    treatmentModalities: update.treatmentModalities,
-    redFlags: update.redFlags,
-    notes: update.notes,
-    createdAt: update.createdAt,
-  }));
-
   return NextResponse.json({
     accessDecision: "allowed",
-    snapshot,
+    snapshot: sharedUpdates,
   });
 }

@@ -146,6 +146,54 @@
 
 ---
 
+## Milestone 6 — Simulation System
+
+### Admin Access
+- [ ] Log in as `elijah@admin.com` (admin)
+- [ ] Navbar shows "Simulation" link
+- [ ] Click "Simulation" — navigates to `/simulation`
+- [ ] Page shows "Simulation Console" heading
+- [ ] Non-admin users (e.g. `edsun@diversus.com`) cannot access `/simulation` — redirected to `/dashboard`
+
+### Patient Transfer Demo (A → B Scenario)
+- [ ] Select "City Physio" from Acting Clinic dropdown
+- [ ] Click "Toggle Opt-In" — event appears in Event Log, result shows "Opted In"
+- [ ] Select "John Smith" from Patient dropdown
+- [ ] Click "Simulate Visit" — result shows episode created
+- [ ] Click "Add Clinical Update" — result shows update added
+- [ ] Switch Acting Clinic to "Harbour Health"
+- [ ] Click "Toggle Opt-In" — Harbour Health now opted in
+- [ ] Click "Simulate Visit" for John Smith
+- [ ] Click "Add Clinical Update"
+- [ ] In "Check Access Decision" section: select "City Physio" as Viewing Clinic + "John Smith"
+- [ ] Click "Check Access" → shows **Allowed** (green badge)
+- [ ] Select "Harbour Health" as Viewing Clinic + "John Smith"
+- [ ] Click "Check Access" → shows **Allowed** (green badge)
+
+### Opt-Out Denies Access
+- [ ] Switch Acting Clinic to "Harbour Health"
+- [ ] Click "Toggle Opt-In" — Harbour Health now opted out
+- [ ] In Check Access: select "Harbour Health" + "John Smith"
+- [ ] Click "Check Access" → shows **Denied** with `OPTED_OUT` reason code
+- [ ] In Check Access: select "City Physio" + "John Smith"
+- [ ] Click "Check Access" → still **Allowed** (Harbour Health's prior data still visible)
+
+### Replay
+- [ ] Click "Replay All Events" — Replay Timeline appears
+- [ ] Timeline shows numbered steps with event type and access decision at each step
+- [ ] Access decisions in replay match what was observed live
+
+### SimulationEvents
+- [ ] In Event Log, verify events include `TOGGLE_OPT_IN`, `VISIT`, and `CLINICAL_UPDATE` types
+- [ ] Click "Refresh" — events list updates
+
+### Architecture Verification
+- [ ] `domain/services/simulation.ts` imports `evaluateAccess` from `domain/policy/access`
+- [ ] `domain/services/simulation.ts` does NOT contain inline access checks (no `optedIn` boolean comparisons)
+- [ ] All simulation API endpoints (`/api/simulation/*`) check `role === "admin"`
+
+---
+
 ## Sign-Out Verification
 - [ ] "Sign out" button is gold/prominent in the navbar (not plain text)
 - [ ] Clicking "Sign out" clears the session and redirects to the current deployment's `/login` page

@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard" },
-  // Milestone 2+: Patients, Reports, Simulation
+  { href: "/simulation", label: "Simulation" },
 ];
 
 export default function Navbar() {
