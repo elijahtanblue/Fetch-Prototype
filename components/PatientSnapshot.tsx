@@ -12,6 +12,11 @@ interface SnapshotEntry {
   treatmentModalities?: string;
   redFlags?: boolean;
   notes?: string;
+  updateType?: string;
+  precautions?: string | null;
+  responsePattern?: string | null;
+  suggestedNextSteps?: string | null;
+  notesSummary?: string | null;
   createdAt?: string;
   historyExists?: boolean;
   snapshotLocked?: boolean;
@@ -24,6 +29,7 @@ interface SnapshotResponse {
   snapshot?: SnapshotEntry[];
   reasonCode?: string;
   explanation?: string;
+  consentOptedOut?: boolean;
 }
 
 interface PatientSnapshotProps {
@@ -82,7 +88,18 @@ export default function PatientSnapshot({
             </p>
           )}
 
-          {!loading && data?.accessDecision === "denied" && (
+          {!loading && data?.consentOptedOut && (
+            <div
+              className="bg-red-50 border border-red-200 rounded-lg p-3"
+              data-testid="consent-banner"
+            >
+              <p className="text-sm text-red-800">
+                This patient has opted out of sharing their history with other clinics.
+              </p>
+            </div>
+          )}
+
+          {!loading && data?.accessDecision === "denied" && !data?.consentOptedOut && (
             <div
               className="bg-amber-50 border border-amber-200 rounded-lg p-3"
               data-testid="denial-panel"
@@ -190,8 +207,32 @@ export default function PatientSnapshot({
                         </p>
                       )}
 
-                      {/* Notes (full or truncated for limited) */}
-                      {entry.notes && (
+                      {/* Structured fields (full tier) */}
+                      {entry.precautions && (
+                        <p className="text-blue-700 mt-0.5">
+                          <strong>Precautions:</strong> {entry.precautions}
+                        </p>
+                      )}
+                      {entry.responsePattern && (
+                        <p className="text-blue-700 mt-0.5">
+                          <strong>Response:</strong> {entry.responsePattern}
+                        </p>
+                      )}
+                      {entry.suggestedNextSteps && (
+                        <p className="text-blue-700 mt-0.5">
+                          <strong>Next Steps:</strong> {entry.suggestedNextSteps}
+                        </p>
+                      )}
+
+                      {/* Notes summary (shown instead of raw notes for cross-clinic) */}
+                      {entry.notesSummary && (
+                        <p className="text-blue-600 italic mt-0.5">
+                          <strong>Summary:</strong> {entry.notesSummary}
+                        </p>
+                      )}
+
+                      {/* Notes (full or truncated for limited, legacy updates) */}
+                      {entry.notes && !entry.notesSummary && (
                         <p className="text-blue-600 italic mt-0.5">
                           {entry.notes}
                         </p>

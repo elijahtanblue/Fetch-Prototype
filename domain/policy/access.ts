@@ -58,6 +58,7 @@ export const TIER_OVERRIDE_VALUES: Record<AccessTier, number> = {
 };
 
 export const POINTS_PER_UPDATE = 6;
+export const POINTS_PER_QUICK_HANDOFF = 2;
 export const MAX_ACCESS_PERCENT = 100;
 export const ANTI_SPAM_CAP = 3;
 export const ANTI_SPAM_WINDOW_DAYS = 7;
@@ -111,6 +112,11 @@ export interface SnapshotEntry {
   treatmentModalities: string;
   redFlags: boolean;
   notes: string;
+  updateType?: string;
+  precautions?: string | null;
+  responsePattern?: string | null;
+  suggestedNextSteps?: string | null;
+  notesSummary?: string | null;
   createdAt: Date | string;
 }
 
@@ -124,6 +130,11 @@ export interface FilteredSnapshotEntry {
   treatmentModalities?: string;
   redFlags?: boolean;
   notes?: string;
+  updateType?: string;
+  precautions?: string | null;
+  responsePattern?: string | null;
+  suggestedNextSteps?: string | null;
+  notesSummary?: string | null;
   createdAt?: Date | string;
   historyExists?: boolean;
   snapshotLocked?: boolean;
@@ -144,6 +155,12 @@ export function filterSnapshotByTier(
   if (tier === "limited") {
     const recent = snapshot[0];
     if (!recent) return [];
+    const truncateStr = (s: string | null | undefined): string | null => {
+      if (!s) return null;
+      return s.length > NOTES_TRUNCATE_LENGTH
+        ? s.slice(0, NOTES_TRUNCATE_LENGTH) + "..."
+        : s;
+    };
     return [{
       id: recent.id,
       clinicName: recent.clinicName,
@@ -152,9 +169,11 @@ export function filterSnapshotByTier(
       painRegion: recent.painRegion,
       diagnosis: recent.diagnosis,
       treatmentModalities: recent.treatmentModalities,
+      updateType: recent.updateType,
       notes: recent.notes.length > NOTES_TRUNCATE_LENGTH
         ? recent.notes.slice(0, NOTES_TRUNCATE_LENGTH) + "..."
         : recent.notes,
+      notesSummary: truncateStr(recent.notesSummary),
       createdAt: recent.createdAt,
     }];
   }

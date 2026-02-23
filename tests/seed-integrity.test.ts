@@ -60,6 +60,11 @@ const mockPrismaClient = {
       deleteCalls.push("simulationEvent");
     }),
   },
+  accessEvent: {
+    deleteMany: jest.fn(async () => {
+      deleteCalls.push("accessEvent");
+    }),
+  },
   $disconnect: jest.fn(),
 };
 
@@ -82,6 +87,7 @@ describe("Seed Integrity", () => {
 
   test("should clean data in correct dependency order", () => {
     expect(deleteCalls).toEqual([
+      "accessEvent",
       "clinicalUpdate",
       "episode",
       "simulationEvent",

@@ -39,6 +39,7 @@ jest.mock("../lib/generated/prisma/client", () => ({
     clinicalUpdate: { deleteMany: jest.fn(async () => {}) },
     episode: { deleteMany: jest.fn(async () => {}) },
     simulationEvent: { deleteMany: jest.fn(async () => {}) },
+    accessEvent: { deleteMany: jest.fn(async () => {}) },
     $disconnect: jest.fn(),
   })),
 }));

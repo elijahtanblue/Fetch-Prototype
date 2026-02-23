@@ -8,6 +8,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   // Clean existing data (idempotent re-seed) — delete in dependency order
+  await prisma.accessEvent.deleteMany();
   await prisma.clinicalUpdate.deleteMany();
   await prisma.episode.deleteMany();
   await prisma.simulationEvent.deleteMany();

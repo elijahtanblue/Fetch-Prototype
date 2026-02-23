@@ -25,6 +25,7 @@ jest.mock("@/lib/generated/prisma/client", () => ({
     clinicalUpdate: { create: mockUpdateCreate, count: mockUpdateCount },
     clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     simulationEvent: { create: mockEventCreate },
+    accessEvent: { create: jest.fn(async () => ({})) },
   })),
 }));
 

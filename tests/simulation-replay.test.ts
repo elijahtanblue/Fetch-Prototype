@@ -56,6 +56,9 @@ function createReplayMockPrisma() {
         }));
       }),
     },
+    patient: {
+      findUnique: jest.fn(async () => ({ consentStatus: "SHARE" })),
+    },
     simulationEvent: {
       create: jest.fn(async () => ({})),
     },
@@ -113,8 +116,8 @@ describe("Simulation Replay - Deterministic Behavior", () => {
 
     expect(results).toHaveLength(1);
     expect(results[0].action).toBe("TOGGLE_OPT_IN");
-    // After toggle, clinic A is opted in but accessPercent is 0 → INACTIVE_CONTRIBUTOR
+    // After toggle, clinic A is opted in with accessPercent=100, but no cross-clinic data → NO_SNAPSHOT
     expect(results[0].accessDecision?.allowed).toBe(false);
-    expect(results[0].accessDecision?.reasonCode).toBe("INACTIVE_CONTRIBUTOR");
+    expect(results[0].accessDecision?.reasonCode).toBe("NO_SNAPSHOT");
   });
 });

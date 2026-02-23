@@ -8,6 +8,7 @@
 const mockClinicFindUnique = jest.fn();
 const mockClinicUpdate = jest.fn();
 const mockUpdateFindMany = jest.fn();
+const mockPatientFindUnique = jest.fn();
 
 jest.mock("@prisma/adapter-neon", () => ({
   PrismaNeon: jest.fn(() => ({})),
@@ -17,6 +18,7 @@ jest.mock("@/lib/generated/prisma/client", () => ({
   PrismaClient: jest.fn(() => ({
     clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     clinicalUpdate: { findMany: mockUpdateFindMany },
+    patient: { findUnique: mockPatientFindUnique },
   })),
 }));
 
@@ -35,7 +37,10 @@ describe("GET /api/snapshots/[patientId] - Tier Integration", () => {
     mockClinicFindUnique.mockReset();
     mockClinicUpdate.mockReset();
     mockUpdateFindMany.mockReset();
+    mockPatientFindUnique.mockReset();
     mockClinicUpdate.mockResolvedValue({});
+    // Default: patient consents to sharing
+    mockPatientFindUnique.mockResolvedValue({ consentStatus: "SHARE" });
   });
 
   test("returns denied with OPTED_OUT when clinic is not opted in", async () => {

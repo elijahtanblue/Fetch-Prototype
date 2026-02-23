@@ -79,6 +79,9 @@ function createStatefulMockPrisma() {
         }));
       }),
     },
+    patient: {
+      findUnique: jest.fn(async () => ({ consentStatus: "SHARE" })),
+    },
     simulationEvent: {
       create: jest.fn(async () => ({})),
     },
@@ -167,10 +170,11 @@ describe("Simulation Integration - Patient Transfer with Tiers", () => {
     expect(accessA.allowed).toBe(true);
   });
 
-  test("clinic with low accessPercent gets inactive tier denial", async () => {
+  test("clinic with full access but no cross-clinic data gets NO_SNAPSHOT", async () => {
+    // Opt-in sets accessPercent=100 (full tier)
     await simulateToggle(ctx, { clinicId: "cA", userId: "uA" });
 
-    // Only 1 update = 6% (inactive tier)
+    // Clinic A contributes its own data, but no OTHER clinic has contributed for this patient
     const visit = await simulateVisit(ctx, { clinicId: "cA", userId: "uA", patientId: "p1", reason: "Test" });
     await simulateUpdate(ctx, {
       clinicId: "cA", userId: "uA", episodeId: visit.data.episodeId as string,
@@ -179,7 +183,7 @@ describe("Simulation Integration - Patient Transfer with Tiers", () => {
 
     const access = await evaluateAccessForClinic(ctx, { clinicId: "cA", patientId: "p1" });
     expect(access.allowed).toBe(false);
-    expect(access.reasonCode).toBe("INACTIVE_CONTRIBUTOR");
-    expect(access.tier).toBe("inactive");
+    expect(access.reasonCode).toBe("NO_SNAPSHOT");
+    expect(access.tier).toBe("full");
   });
 });

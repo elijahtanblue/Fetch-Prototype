@@ -26,6 +26,9 @@ function makeMockPrisma() {
       create: jest.fn(),
       findMany: jest.fn(),
     },
+    patient: {
+      findUnique: jest.fn().mockResolvedValue({ consentStatus: "SHARE" }),
+    },
     simulationEvent: {
       create: jest.fn(),
     },

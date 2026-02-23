@@ -22,6 +22,7 @@ model Clinic {
   episodes         Episode[]
   clinicalUpdates  ClinicalUpdate[]
   simulationEvents SimulationEvent[]
+  accessEvents     AccessEvent[]
 }
 
 model User {
@@ -41,13 +42,15 @@ model User {
 }
 
 model Patient {
-  id          String   @id @default(cuid())
-  firstName   String
-  lastName    String
-  dateOfBirth DateTime
-  clinicId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String    @id @default(cuid())
+  firstName        String
+  lastName         String
+  dateOfBirth      DateTime
+  clinicId         String
+  consentStatus    String    @default("SHARE")
+  consentUpdatedAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   clinic   Clinic    @relation(fields: [clinicId], references: [id])
   episodes Episode[]
@@ -73,11 +76,17 @@ model ClinicalUpdate {
   episodeId           String
   clinicId            String
   userId              String
+  updateType          String   @default("STRUCTURED")
   painRegion          String
   diagnosis           String
   treatmentModalities String
   redFlags            Boolean  @default(false)
   notes               String   @default("")
+  precautions         String?
+  responsePattern     String?
+  suggestedNextSteps  String?
+  notesRaw            String?
+  notesSummary        String?
   createdAt           DateTime @default(now())
 
   episode Episode @relation(fields: [episodeId], references: [id])
@@ -95,4 +104,17 @@ model SimulationEvent {
 
   clinic Clinic @relation(fields: [clinicId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
+}
+
+model AccessEvent {
+  id         String   @id @default(cuid())
+  clinicId   String
+  delta      Int
+  reasonCode String
+  patientId  String?
+  episodeId  String?
+  updateId   String?
+  createdAt  DateTime @default(now())
+
+  clinic Clinic @relation(fields: [clinicId], references: [id])
 }

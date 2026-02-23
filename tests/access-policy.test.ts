@@ -265,3 +265,27 @@ describe("filterSnapshotByTier", () => {
     expect(filterSnapshotByTier([], "minimal")).toHaveLength(0);
   });
 });
+
+describe("Regression - clinic at 0% stays opted-in", () => {
+  test("clinic with accessPercent=0 and optedIn=true returns INACTIVE_CONTRIBUTOR, not OPTED_OUT", () => {
+    const result = evaluateAccess({
+      optedIn: true,
+      accessPercent: 0,
+      hasSnapshot: true,
+    });
+    expect(result.allowed).toBe(false);
+    expect(result.reasonCode).toBe("INACTIVE_CONTRIBUTOR");
+    // Key: optedIn is not changed by the policy — it's still true in the input
+    // The policy only reads optedIn, it never mutates it
+  });
+
+  test("evaluateAccess never returns a directive to change optedIn", () => {
+    const result = evaluateAccess({
+      optedIn: true,
+      accessPercent: 0,
+      hasSnapshot: true,
+    });
+    // AccessDecision does not have an optedIn field — policy never forces opt-out
+    expect(result).not.toHaveProperty("optedIn");
+  });
+});

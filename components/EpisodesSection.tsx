@@ -18,6 +18,11 @@ interface ClinicalUpdate {
   treatmentModalities: string;
   redFlags: boolean;
   notes: string;
+  updateType?: string;
+  precautions?: string | null;
+  responsePattern?: string | null;
+  suggestedNextSteps?: string | null;
+  notesSummary?: string | null;
   createdAt: string;
 }
 
@@ -115,10 +120,32 @@ export default function EpisodesSection({
                             Red Flag
                           </span>
                         )}
+                        {update.updateType === "QUICK_HANDOFF" && (
+                          <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-xs font-medium">
+                            Quick
+                          </span>
+                        )}
                       </div>
-                      <p className="text-[var(--kinetic-gray)] mt-1">
-                        Treatment: {update.treatmentModalities}
-                      </p>
+                      {update.treatmentModalities && (
+                        <p className="text-[var(--kinetic-gray)] mt-1">
+                          Treatment: {update.treatmentModalities}
+                        </p>
+                      )}
+                      {update.precautions && (
+                        <p className="text-[var(--kinetic-gray)] mt-0.5">
+                          Precautions: {update.precautions}
+                        </p>
+                      )}
+                      {update.responsePattern && (
+                        <p className="text-[var(--kinetic-gray)] mt-0.5">
+                          Response: {update.responsePattern}
+                        </p>
+                      )}
+                      {update.suggestedNextSteps && (
+                        <p className="text-[var(--kinetic-gray)] mt-0.5">
+                          Next Steps: {update.suggestedNextSteps}
+                        </p>
+                      )}
                       {update.notes && (
                         <p className="text-[var(--kinetic-gray)] mt-0.5 italic">
                           {update.notes}

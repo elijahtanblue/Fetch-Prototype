@@ -22,6 +22,9 @@ jest.mock("@/lib/generated/prisma/client", () => ({
     simulationEvent: {
       create: mockEventCreate,
     },
+    accessEvent: {
+      create: jest.fn(async () => ({})),
+    },
   })),
 }));
 
@@ -43,6 +46,7 @@ describe("PATCH /api/clinics/[id] - Toggle Behavior", () => {
       id: "c1",
       name: "City Physio",
       optedIn: false,
+      accessPercent: 30,
     });
     mockUpdate.mockResolvedValue({
       id: "c1",
@@ -63,7 +67,7 @@ describe("PATCH /api/clinics/[id] - Toggle Behavior", () => {
     expect(data.optedIn).toBe(true);
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: "c1" },
-      data: { optedIn: true },
+      data: { optedIn: true, accessPercent: 100, lastDecayAt: expect.any(Date) },
     });
   });
 
@@ -72,6 +76,7 @@ describe("PATCH /api/clinics/[id] - Toggle Behavior", () => {
       id: "c1",
       name: "City Physio",
       optedIn: true,
+      accessPercent: 80,
     });
     mockUpdate.mockResolvedValue({
       id: "c1",
@@ -114,6 +119,7 @@ describe("PATCH /api/clinics/[id] - Toggle Behavior", () => {
       id: "c1",
       name: "City Physio",
       optedIn: false,
+      accessPercent: 50,
     });
     mockUpdate.mockResolvedValue({
       id: "c1",

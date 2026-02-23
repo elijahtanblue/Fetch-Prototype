@@ -12,6 +12,7 @@ import {
   applyDecay,
   addPoints,
   POINTS_PER_UPDATE,
+  POINTS_PER_QUICK_HANDOFF,
   type AccessDecision,
 } from "@/domain/policy/access";
 import { getSharedUpdatesForPatient } from "@/domain/services/snapshot";
@@ -51,6 +52,11 @@ export interface SimulateUpdateInput {
   treatmentModalities: string;
   redFlags?: boolean;
   notes?: string;
+  updateType?: string;
+  precautions?: string;
+  responsePattern?: string;
+  suggestedNextSteps?: string;
+  notesRaw?: string;
 }
 
 export interface SimulateAccessCheckInput {
@@ -77,9 +83,14 @@ export async function simulateToggle(
     return { action: "TOGGLE_OPT_IN", success: false, data: { error: "Clinic not found" } };
   }
 
+  const turningOn = !clinic.optedIn;
+  const now = ctx.now ?? new Date();
   const updated = await ctx.prisma.clinic.update({
     where: { id: input.clinicId },
-    data: { optedIn: !clinic.optedIn },
+    data: {
+      optedIn: turningOn,
+      ...(turningOn ? { accessPercent: 100, lastDecayAt: now } : {}),
+    },
   });
 
   await ctx.prisma.simulationEvent.create({
@@ -142,20 +153,30 @@ export async function simulateUpdate(
 ): Promise<SimulationResult> {
   const now = ctx.now ?? new Date();
 
+  const effectiveType = input.updateType ?? "STRUCTURED";
+
   const update = await ctx.prisma.clinicalUpdate.create({
     data: {
       episodeId: input.episodeId,
       clinicId: input.clinicId,
       userId: input.userId,
+      updateType: effectiveType,
       painRegion: input.painRegion,
       diagnosis: input.diagnosis,
       treatmentModalities: input.treatmentModalities,
       redFlags: input.redFlags ?? false,
       notes: input.notes ?? "",
+      ...(effectiveType === "STRUCTURED" ? {
+        precautions: input.precautions ?? null,
+        responsePattern: input.responsePattern ?? null,
+        suggestedNextSteps: input.suggestedNextSteps ?? null,
+        notesRaw: input.notesRaw ?? null,
+      } : {}),
     },
   });
 
-  // Apply decay then add points
+  // Apply decay then add points (type-appropriate)
+  const pointsForType = effectiveType === "STRUCTURED" ? POINTS_PER_UPDATE : POINTS_PER_QUICK_HANDOFF;
   const clinic = await ctx.prisma.clinic.findUnique({
     where: { id: input.clinicId },
     select: { accessPercent: true, lastDecayAt: true },
@@ -166,7 +187,7 @@ export async function simulateUpdate(
     clinic?.lastDecayAt ?? null,
     now
   );
-  const newPercent = addPoints(decayed.accessPercent, POINTS_PER_UPDATE);
+  const newPercent = addPoints(decayed.accessPercent, pointsForType);
 
   await ctx.prisma.clinic.update({
     where: { id: input.clinicId },
@@ -185,7 +206,8 @@ export async function simulateUpdate(
       metadata: JSON.stringify({
         updateId: update.id,
         episodeId: input.episodeId,
-        pointsEarned: POINTS_PER_UPDATE,
+        updateType: effectiveType,
+        pointsEarned: pointsForType,
         newAccessPercent: newPercent,
       }),
     },
@@ -222,7 +244,7 @@ export async function evaluateAccessForClinic(
   // Apply decay
   const decayed = applyDecay(clinic.accessPercent, clinic.lastDecayAt, now);
 
-  const sharedUpdates = await getSharedUpdatesForPatient(
+  const { updates: sharedUpdates } = await getSharedUpdatesForPatient(
     ctx.prisma,
     input.patientId,
     input.clinicId

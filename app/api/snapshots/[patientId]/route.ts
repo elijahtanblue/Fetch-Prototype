@@ -52,12 +52,22 @@ export async function GET(
     });
   }
 
-  // Fetch snapshot data
-  const sharedUpdates = await getSharedUpdatesForPatient(
+  // Fetch snapshot data (respects patient consent)
+  const { updates: sharedUpdates, consentOptedOut } = await getSharedUpdatesForPatient(
     prisma,
     patientId,
     clinicId
   );
+
+  // If patient opted out, return early with consent message
+  if (consentOptedOut) {
+    return NextResponse.json({
+      accessDecision: "denied",
+      reasonCode: "PATIENT_OPTED_OUT",
+      consentOptedOut: true,
+      explanation: "This patient has opted out of sharing their history with other clinics.",
+    });
+  }
 
   const hasSnapshot = sharedUpdates.length > 0;
 

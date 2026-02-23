@@ -2,7 +2,7 @@
  * Tests for clinic contribution update + points system
  *
  * Verifies that creating a clinical update sets the clinic's
- * lastContributionAt timestamp and adds points to accessPercent.
+ * lastContributionAt timestamp and creates an AccessEvent via points ledger.
  */
 
 const mockEpisodeFindUnique = jest.fn();
@@ -11,6 +11,7 @@ const mockUpdateCount = jest.fn();
 const mockClinicFindUnique = jest.fn();
 const mockClinicUpdate = jest.fn(async () => ({}));
 const mockEventCreate = jest.fn(async () => ({}));
+const mockAccessEventCreate = jest.fn(async () => ({}));
 
 jest.mock("@prisma/adapter-neon", () => ({
   PrismaNeon: jest.fn(() => ({})),
@@ -22,6 +23,7 @@ jest.mock("@/lib/generated/prisma/client", () => ({
     clinicalUpdate: { create: mockUpdateCreate, count: mockUpdateCount },
     clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     simulationEvent: { create: mockEventCreate },
+    accessEvent: { create: mockAccessEventCreate },
   })),
 }));
 
@@ -54,6 +56,7 @@ describe("Contribution Timestamp + Points Update", () => {
     mockClinicFindUnique.mockReset();
     mockClinicUpdate.mockReset();
     mockEventCreate.mockClear();
+    mockAccessEventCreate.mockClear();
 
     // Default: episode exists, clinic has accessPercent 50, no spam
     mockEpisodeFindUnique.mockResolvedValue({ id: "ep1", patientId: "p1" });
@@ -62,40 +65,32 @@ describe("Contribution Timestamp + Points Update", () => {
     mockUpdateCount.mockResolvedValue(0);
   });
 
-  test("updates clinic after creating an update", async () => {
+  test("updates clinic with lastContributionAt after creating an update", async () => {
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest(validBody));
 
-    expect(mockClinicUpdate).toHaveBeenCalledTimes(1);
-  });
-
-  test("updates the correct clinic (user's clinicId)", async () => {
-    const { POST } = await import("@/app/api/updates/route");
-    await POST(makeRequest(validBody));
-
-    expect(mockClinicUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "c1" },
-      })
+    // clinic.update is called for timestamps
+    const timestampCall = mockClinicUpdate.mock.calls.find(
+      (call: Array<Record<string, unknown>>) => call[0]?.data && 'lastContributionAt' in (call[0].data as Record<string, unknown>)
     );
+    expect(timestampCall).toBeDefined();
+    expect((timestampCall![0].data as Record<string, unknown>).lastContributionAt).toBeInstanceOf(Date);
   });
 
-  test("sets lastContributionAt to a Date", async () => {
-    const { POST } = await import("@/app/api/updates/route");
-    await POST(makeRequest(validBody));
-
-    const updateArg = mockClinicUpdate.mock.calls[0][0];
-    expect(updateArg.data.lastContributionAt).toBeInstanceOf(Date);
-  });
-
-  test("adds points to accessPercent when under spam cap", async () => {
-    mockUpdateCount.mockResolvedValue(0); // no prior updates
+  test("creates AccessEvent when points earned", async () => {
+    mockUpdateCount.mockResolvedValue(0);
 
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest(validBody));
 
-    const updateArg = mockClinicUpdate.mock.calls[0][0];
-    expect(updateArg.data.accessPercent).toBe(56); // 50 + 6
+    expect(mockAccessEventCreate).toHaveBeenCalledTimes(1);
+    expect(mockAccessEventCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        clinicId: "c1",
+        delta: 6,
+        reasonCode: "STRUCTURED_UPDATE",
+      }),
+    });
   });
 
   test("does NOT update clinic when validation fails", async () => {
@@ -103,5 +98,6 @@ describe("Contribution Timestamp + Points Update", () => {
     await POST(makeRequest({ episodeId: "ep1" })); // missing required fields
 
     expect(mockClinicUpdate).not.toHaveBeenCalled();
+    expect(mockAccessEventCreate).not.toHaveBeenCalled();
   });
 });

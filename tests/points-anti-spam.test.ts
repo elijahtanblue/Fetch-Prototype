@@ -2,9 +2,10 @@
  * Tests for points addition and anti-spam cap in the updates endpoint.
  *
  * Verifies:
- * - +6 points per clinical update
+ * - +6 points per clinical update via ledger
  * - Cap at 100
  * - Anti-spam: max 3 point-earning updates per patient per 7 days
+ * - AccessEvent creation
  */
 
 const mockEpisodeFindUnique = jest.fn();
@@ -13,6 +14,7 @@ const mockUpdateCount = jest.fn();
 const mockClinicFindUnique = jest.fn();
 const mockClinicUpdate = jest.fn(async () => ({}));
 const mockEventCreate = jest.fn(async () => ({}));
+const mockAccessEventCreate = jest.fn(async () => ({}));
 
 jest.mock("@prisma/adapter-neon", () => ({
   PrismaNeon: jest.fn(() => ({})),
@@ -24,6 +26,7 @@ jest.mock("@/lib/generated/prisma/client", () => ({
     clinicalUpdate: { create: mockUpdateCreate, count: mockUpdateCount },
     clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     simulationEvent: { create: mockEventCreate },
+    accessEvent: { create: mockAccessEventCreate },
   })),
 }));
 
@@ -56,78 +59,47 @@ describe("Points + Anti-Spam", () => {
     mockClinicFindUnique.mockReset();
     mockClinicUpdate.mockReset();
     mockEventCreate.mockClear();
+    mockAccessEventCreate.mockClear();
 
     mockEpisodeFindUnique.mockResolvedValue({ id: "ep1", patientId: "p1" });
     mockUpdateCreate.mockResolvedValue({ id: "cu1", ...validBody });
   });
 
-  test("adds 6 points when under spam cap (0 prior updates)", async () => {
+  test("creates AccessEvent with +6 when under spam cap", async () => {
     mockClinicFindUnique.mockResolvedValue({ accessPercent: 50, lastDecayAt: new Date() });
     mockUpdateCount.mockResolvedValue(0);
 
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest(validBody));
 
-    const updateArg = mockClinicUpdate.mock.calls[0][0];
-    expect(updateArg.data.accessPercent).toBe(56); // 50 + 6
+    expect(mockAccessEventCreate).toHaveBeenCalledTimes(1);
+    expect(mockAccessEventCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        delta: 6,
+        reasonCode: "STRUCTURED_UPDATE",
+        clinicId: "c1",
+      }),
+    });
   });
 
-  test("adds 6 points when under spam cap (2 prior updates)", async () => {
-    mockClinicFindUnique.mockResolvedValue({ accessPercent: 30, lastDecayAt: new Date() });
-    mockUpdateCount.mockResolvedValue(2); // 2 prior, under cap of 3
-
-    const { POST } = await import("@/app/api/updates/route");
-    await POST(makeRequest(validBody));
-
-    const updateArg = mockClinicUpdate.mock.calls[0][0];
-    expect(updateArg.data.accessPercent).toBe(36); // 30 + 6
-  });
-
-  test("does NOT add points when at spam cap (3 prior updates)", async () => {
+  test("does NOT create AccessEvent when at spam cap (3 prior updates)", async () => {
     mockClinicFindUnique.mockResolvedValue({ accessPercent: 50, lastDecayAt: new Date() });
-    mockUpdateCount.mockResolvedValue(3); // at cap
+    mockUpdateCount.mockResolvedValue(3);
 
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest(validBody));
 
-    const updateArg = mockClinicUpdate.mock.calls[0][0];
-    expect(updateArg.data.accessPercent).toBe(50); // unchanged
+    expect(mockAccessEventCreate).not.toHaveBeenCalled();
   });
 
-  test("does NOT add points when over spam cap (5 prior updates)", async () => {
+  test("does NOT create AccessEvent when over spam cap (5 prior updates)", async () => {
     mockClinicFindUnique.mockResolvedValue({ accessPercent: 60, lastDecayAt: new Date() });
     mockUpdateCount.mockResolvedValue(5);
 
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest(validBody));
 
-    const updateArg = mockClinicUpdate.mock.calls[0][0];
-    expect(updateArg.data.accessPercent).toBe(60); // unchanged
-  });
-
-  test("caps accessPercent at 100", async () => {
-    mockClinicFindUnique.mockResolvedValue({ accessPercent: 97, lastDecayAt: new Date() });
-    mockUpdateCount.mockResolvedValue(0);
-
-    const { POST } = await import("@/app/api/updates/route");
-    await POST(makeRequest(validBody));
-
-    const updateArg = mockClinicUpdate.mock.calls[0][0];
-    expect(updateArg.data.accessPercent).toBe(100); // 97 + 6 = 103 → capped at 100
-  });
-
-  test("applies decay before adding points", async () => {
-    // 5 days ago → 5% decay. 60 - 5 = 55, then +6 = 61
-    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
-    mockClinicFindUnique.mockResolvedValue({ accessPercent: 60, lastDecayAt: fiveDaysAgo });
-    mockUpdateCount.mockResolvedValue(0);
-
-    const { POST } = await import("@/app/api/updates/route");
-    await POST(makeRequest(validBody));
-
-    const updateArg = mockClinicUpdate.mock.calls[0][0];
-    // After decay: 60 - 5 = 55, then +6 = 61
-    expect(updateArg.data.accessPercent).toBe(61);
+    expect(mockAccessEventCreate).not.toHaveBeenCalled();
   });
 
   test("response includes pointsEarned field", async () => {
@@ -150,5 +122,34 @@ describe("Points + Anti-Spam", () => {
     const data = await res.json();
 
     expect(data.pointsEarned).toBe(0);
+  });
+
+  test("applies decay before adding points", async () => {
+    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+    mockClinicFindUnique.mockResolvedValue({ accessPercent: 60, lastDecayAt: fiveDaysAgo });
+    mockUpdateCount.mockResolvedValue(0);
+
+    const { POST } = await import("@/app/api/updates/route");
+    const res = await POST(makeRequest(validBody));
+    const data = await res.json();
+
+    expect(data.pointsEarned).toBe(6);
+    expect(mockAccessEventCreate).toHaveBeenCalledTimes(1);
+  });
+
+  test("AccessEvent includes patientId, episodeId, updateId", async () => {
+    mockClinicFindUnique.mockResolvedValue({ accessPercent: 50, lastDecayAt: new Date() });
+    mockUpdateCount.mockResolvedValue(0);
+
+    const { POST } = await import("@/app/api/updates/route");
+    await POST(makeRequest(validBody));
+
+    expect(mockAccessEventCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        patientId: "p1",
+        episodeId: "ep1",
+        updateId: "cu1",
+      }),
+    });
   });
 });

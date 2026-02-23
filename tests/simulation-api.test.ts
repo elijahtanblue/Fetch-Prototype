@@ -21,12 +21,15 @@ jest.mock("@prisma/adapter-neon", () => ({
   PrismaNeon: jest.fn(() => ({})),
 }));
 
+const mockPatientFindUnique = jest.fn();
+
 jest.mock("@/lib/generated/prisma/client", () => ({
   PrismaClient: jest.fn(() => ({
     clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     user: { findFirst: mockUserFindFirst },
     episode: { create: mockEpisodeCreate },
     clinicalUpdate: { create: mockClinicalUpdateCreate, findMany: mockClinicalUpdateFindMany },
+    patient: { findUnique: mockPatientFindUnique },
     simulationEvent: { create: mockSimulationEventCreate, findMany: mockSimulationEventFindMany },
   })),
 }));
@@ -54,8 +57,10 @@ describe("Simulation API Endpoints", () => {
     mockClinicalUpdateFindMany.mockReset();
     mockSimulationEventCreate.mockReset();
     mockSimulationEventFindMany.mockReset();
+    mockPatientFindUnique.mockReset();
     mockUserFindFirst.mockResolvedValue({ id: "u1" });
     mockSimulationEventCreate.mockResolvedValue({});
+    mockPatientFindUnique.mockResolvedValue({ consentStatus: "SHARE" });
   });
 
   describe("POST /api/simulation/toggle", () => {

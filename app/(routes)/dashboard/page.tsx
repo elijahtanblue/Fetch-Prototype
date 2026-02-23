@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { determineTier } from "@/domain/policy/access";
 import ClinicOptInToggle from "@/components/ClinicOptInToggle";
+import ConsentToggle from "@/components/ConsentToggle";
 import EpisodesSection from "@/components/EpisodesSection";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export default async function DashboardPage() {
   const [clinics, patients, episodes] = await Promise.all([
     getClinics(),
     prisma.patient.findMany({
-      select: { id: true, firstName: true, lastName: true },
+      select: { id: true, firstName: true, lastName: true, consentStatus: true },
       orderBy: { lastName: "asc" },
     }),
     prisma.episode.findMany({
@@ -70,17 +71,33 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Contribute Banner */}
-      <div className="bg-[var(--kinetic-gold-light)] border border-[var(--kinetic-gold)] rounded-lg p-4 mb-6 flex items-center justify-between">
-        <div>
-          <p className="font-medium text-[var(--kinetic-dark)] text-sm">
-            Contribute Updates to Unlock Patient History
-          </p>
-          <p className="text-xs text-[var(--kinetic-gray)] mt-0.5">
-            Privileges earned through sharing structured patient summaries.
-          </p>
-        </div>
-      </div>
+      {/* Access Progress Bar */}
+      {(() => {
+        const myClinic = clinics.find((c) => c.id === clinicId);
+        if (!myClinic) return null;
+        const tier = determineTier(myClinic.accessPercent);
+        const style = TIER_STYLES[tier];
+        const barColor = tier === "full" ? "bg-green-500" : tier === "limited" ? "bg-yellow-500" : tier === "minimal" ? "bg-orange-500" : "bg-red-400";
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6" data-testid="access-progress-card">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">Your Access Level</h2>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${style.bg} ${style.text}`} data-testid="tier-label">
+                  {style.label}
+                </span>
+              </div>
+              <span className="text-sm font-medium text-[var(--kinetic-dark)]" data-testid="access-percent">{myClinic.accessPercent}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5" data-testid="progress-bar">
+              <div className={`${barColor} h-2.5 rounded-full transition-all`} style={{ width: `${myClinic.accessPercent}%` }}></div>
+            </div>
+            <p className="text-xs text-[var(--kinetic-gray)] mt-2">
+              Access decays 1% per day. Earn points by contributing clinical updates.
+            </p>
+          </div>
+        );
+      })()}
 
       {/* Episodes Section */}
       <div className="mb-6">
@@ -165,6 +182,44 @@ export default async function DashboardPage() {
           </tbody>
         </table>
       </div>
+      {/* Patient Consent (admin only) */}
+      {isAdmin && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6">
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
+              Patient Consent
+            </h2>
+          </div>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100 text-left">
+                <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+                  Patient Name
+                </th>
+                <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+                  Sharing Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {patients.map((patient) => (
+                <tr key={patient.id} className="border-b border-gray-50 last:border-b-0">
+                  <td className="px-4 py-3 text-sm text-[var(--kinetic-dark)]">
+                    {patient.firstName} {patient.lastName}
+                  </td>
+                  <td className="px-4 py-3">
+                    <ConsentToggle
+                      patientId={patient.id}
+                      patientName={`${patient.firstName} ${patient.lastName}`}
+                      initialConsent={patient.consentStatus}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

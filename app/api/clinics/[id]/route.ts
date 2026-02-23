@@ -6,6 +6,7 @@ import {
   determineTier,
   type AccessTier,
 } from "@/domain/policy/access";
+import { awardPoints, REASON_CODES } from "@/domain/services/points";
 
 export const dynamic = "force-dynamic";
 
@@ -37,10 +38,26 @@ export async function PATCH(
     return NextResponse.json({ error: "Clinic not found" }, { status: 404 });
   }
 
+  const turningOn = !clinic.optedIn;
   const updatedClinic = await prisma.clinic.update({
     where: { id },
-    data: { optedIn: !clinic.optedIn },
+    data: {
+      optedIn: turningOn,
+      ...(turningOn ? { accessPercent: 100, lastDecayAt: new Date() } : {}),
+    },
   });
+
+  // Create AccessEvent ledger entry for opt-in bonus
+  if (turningOn) {
+    const delta = 100 - clinic.accessPercent;
+    if (delta > 0) {
+      await awardPoints(prisma, {
+        clinicId: id,
+        delta,
+        reasonCode: REASON_CODES.OPT_IN_BONUS,
+      });
+    }
+  }
 
   await prisma.simulationEvent.create({
     data: {
@@ -101,12 +118,21 @@ export async function PUT(
   }
 
   const newPercent = TIER_OVERRIDE_VALUES[tier as AccessTier];
+  const delta = newPercent - clinic.accessPercent;
+
   const updatedClinic = await prisma.clinic.update({
     where: { id },
     data: {
       accessPercent: newPercent,
       lastDecayAt: new Date(),
     },
+  });
+
+  // Log admin override in ledger
+  await awardPoints(prisma, {
+    clinicId: id,
+    delta,
+    reasonCode: REASON_CODES.ADMIN_OVERRIDE,
   });
 
   return NextResponse.json({
