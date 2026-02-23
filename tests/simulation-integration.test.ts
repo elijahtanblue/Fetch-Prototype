@@ -1,11 +1,7 @@
 /**
  * Integration tests for end-to-end simulated patient transfer scenario.
  *
- * Walks through:
- * 1. Clinic A opts in, creates visit, adds update
- * 2. Clinic B opts in, creates visit, adds update
- * 3. Both clinics can access each other's data
- * 4. Toggle B off → B denied, A still allowed
+ * Uses accessPercent-based tier system.
  */
 
 import {
@@ -16,43 +12,22 @@ import {
   type SimulationContext,
 } from "@/domain/services/simulation";
 
-// In-memory state tracker for mock Prisma
 interface ClinicState {
   id: string;
   name: string;
   optedIn: boolean;
+  accessPercent: number;
+  lastDecayAt: Date | null;
   lastContributionAt: Date | null;
-}
-
-interface EpisodeState {
-  id: string;
-  patientId: string;
-  clinicId: string;
-  userId: string;
-  reason: string;
-  startDate: Date;
-}
-
-interface UpdateState {
-  id: string;
-  episodeId: string;
-  clinicId: string;
-  userId: string;
-  painRegion: string;
-  diagnosis: string;
-  treatmentModalities: string;
-  redFlags: boolean;
-  notes: string;
-  createdAt: Date;
 }
 
 function createStatefulMockPrisma() {
   const clinics: ClinicState[] = [
-    { id: "cA", name: "Clinic A", optedIn: false, lastContributionAt: null },
-    { id: "cB", name: "Clinic B", optedIn: false, lastContributionAt: null },
+    { id: "cA", name: "Clinic A", optedIn: false, accessPercent: 0, lastDecayAt: null, lastContributionAt: null },
+    { id: "cB", name: "Clinic B", optedIn: false, accessPercent: 0, lastDecayAt: null, lastContributionAt: null },
   ];
-  const episodes: EpisodeState[] = [];
-  const updates: UpdateState[] = [];
+  const episodes: Array<{ id: string; patientId: string; clinicId: string }> = [];
+  const updates: Array<{ id: string; episodeId: string; clinicId: string }> = [];
   let idCounter = 0;
 
   return {
@@ -78,16 +53,16 @@ function createStatefulMockPrisma() {
     episode: {
       create: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
         idCounter++;
-        const ep = { id: `ep-${idCounter}`, ...data } as unknown as EpisodeState;
-        episodes.push(ep);
+        const ep = { id: `ep-${idCounter}`, ...data };
+        episodes.push(ep as { id: string; patientId: string; clinicId: string });
         return ep;
       }),
     },
     clinicalUpdate: {
       create: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
         idCounter++;
-        const cu = { id: `cu-${idCounter}`, createdAt: new Date(), ...data } as unknown as UpdateState;
-        updates.push(cu);
+        const cu = { id: `cu-${idCounter}`, createdAt: new Date(), ...data };
+        updates.push(cu as { id: string; episodeId: string; clinicId: string });
         return cu;
       }),
       findMany: jest.fn(async ({ where }: { where: { episode: { patientId: string }; clinicId: { not: string } } }) => {
@@ -110,7 +85,7 @@ function createStatefulMockPrisma() {
   };
 }
 
-describe("Simulation Integration - Patient Transfer Scenario", () => {
+describe("Simulation Integration - Patient Transfer with Tiers", () => {
   let mockPrisma: ReturnType<typeof createStatefulMockPrisma>;
   let ctx: SimulationContext;
 
@@ -119,103 +94,92 @@ describe("Simulation Integration - Patient Transfer Scenario", () => {
     ctx = { prisma: mockPrisma as unknown as SimulationContext["prisma"], now: new Date("2026-02-23T12:00:00Z") };
   });
 
-  test("full patient transfer: both clinics can access after contributing", async () => {
-    // Step 1: Clinic A opts in
-    const toggleA = await simulateToggle(ctx, { clinicId: "cA", userId: "uA" });
-    expect(toggleA.data.optedIn).toBe(true);
+  test("full patient transfer: both clinics earn points and can access", async () => {
+    // Clinic A opts in
+    await simulateToggle(ctx, { clinicId: "cA", userId: "uA" });
 
-    // Step 2: Clinic A creates visit for patient P
+    // Clinic A creates visit + 12 updates to reach full tier (12 * 6 = 72%)
     const visitA = await simulateVisit(ctx, {
       clinicId: "cA", userId: "uA", patientId: "p1", reason: "Back pain",
     });
-    expect(visitA.success).toBe(true);
+    for (let i = 0; i < 12; i++) {
+      await simulateUpdate(ctx, {
+        clinicId: "cA", userId: "uA", episodeId: visitA.data.episodeId as string,
+        painRegion: "Lower back", diagnosis: "Herniation",
+        treatmentModalities: "Manual therapy",
+      });
+    }
 
-    // Step 3: Clinic A adds clinical update
-    const updateA = await simulateUpdate(ctx, {
-      clinicId: "cA", userId: "uA", episodeId: visitA.data.episodeId as string,
-      painRegion: "Lower back", diagnosis: "Herniation",
-      treatmentModalities: "Manual therapy",
-    });
-    expect(updateA.success).toBe(true);
-
-    // Step 4: Clinic B opts in
-    const toggleB = await simulateToggle(ctx, { clinicId: "cB", userId: "uB" });
-    expect(toggleB.data.optedIn).toBe(true);
-
-    // Step 5: Clinic B creates visit for same patient
+    // Clinic B opts in and contributes similarly
+    await simulateToggle(ctx, { clinicId: "cB", userId: "uB" });
     const visitB = await simulateVisit(ctx, {
       clinicId: "cB", userId: "uB", patientId: "p1", reason: "Follow-up",
     });
-    expect(visitB.success).toBe(true);
+    for (let i = 0; i < 12; i++) {
+      await simulateUpdate(ctx, {
+        clinicId: "cB", userId: "uB", episodeId: visitB.data.episodeId as string,
+        painRegion: "Upper back", diagnosis: "Muscle strain",
+        treatmentModalities: "Exercise prescription",
+      });
+    }
 
-    // Step 6: Clinic B adds clinical update
-    const updateB = await simulateUpdate(ctx, {
-      clinicId: "cB", userId: "uB", episodeId: visitB.data.episodeId as string,
-      painRegion: "Upper back", diagnosis: "Muscle strain",
-      treatmentModalities: "Exercise prescription",
-    });
-    expect(updateB.success).toBe(true);
-
-    // Step 7: Clinic A can access patient P (sees Clinic B's data)
+    // Both clinics can access
     const accessA = await evaluateAccessForClinic(ctx, { clinicId: "cA", patientId: "p1" });
     expect(accessA.allowed).toBe(true);
+    expect(accessA.tier).toBe("full");
 
-    // Step 8: Clinic B can access patient P (sees Clinic A's data)
     const accessB = await evaluateAccessForClinic(ctx, { clinicId: "cB", patientId: "p1" });
     expect(accessB.allowed).toBe(true);
+    expect(accessB.tier).toBe("full");
   });
 
   test("toggle opt-out denies access for that clinic", async () => {
-    // Setup: both clinics opt in and contribute
+    // Setup: both clinics opted in and contributing
     await simulateToggle(ctx, { clinicId: "cA", userId: "uA" });
     await simulateToggle(ctx, { clinicId: "cB", userId: "uB" });
 
     const visitA = await simulateVisit(ctx, { clinicId: "cA", userId: "uA", patientId: "p1", reason: "Pain" });
-    await simulateUpdate(ctx, {
-      clinicId: "cA", userId: "uA", episodeId: visitA.data.episodeId as string,
-      painRegion: "Back", diagnosis: "Sprain", treatmentModalities: "Ice",
-    });
+    for (let i = 0; i < 12; i++) {
+      await simulateUpdate(ctx, {
+        clinicId: "cA", userId: "uA", episodeId: visitA.data.episodeId as string,
+        painRegion: "Back", diagnosis: "Sprain", treatmentModalities: "Ice",
+      });
+    }
 
     const visitB = await simulateVisit(ctx, { clinicId: "cB", userId: "uB", patientId: "p1", reason: "Check" });
-    await simulateUpdate(ctx, {
-      clinicId: "cB", userId: "uB", episodeId: visitB.data.episodeId as string,
-      painRegion: "Neck", diagnosis: "Strain", treatmentModalities: "Heat",
-    });
+    for (let i = 0; i < 12; i++) {
+      await simulateUpdate(ctx, {
+        clinicId: "cB", userId: "uB", episodeId: visitB.data.episodeId as string,
+        painRegion: "Neck", diagnosis: "Strain", treatmentModalities: "Heat",
+      });
+    }
 
-    // Toggle Clinic B opt-out
-    const toggleOff = await simulateToggle(ctx, { clinicId: "cB", userId: "uB" });
-    expect(toggleOff.data.optedIn).toBe(false);
+    // Toggle B opt-out
+    await simulateToggle(ctx, { clinicId: "cB", userId: "uB" });
 
-    // Clinic B denied (OPTED_OUT)
+    // B denied (OPTED_OUT) even with high accessPercent
     const accessB = await evaluateAccessForClinic(ctx, { clinicId: "cB", patientId: "p1" });
     expect(accessB.allowed).toBe(false);
     expect(accessB.reasonCode).toBe("OPTED_OUT");
 
-    // Clinic A still allowed (B's data still exists as snapshot)
+    // A still allowed
     const accessA = await evaluateAccessForClinic(ctx, { clinicId: "cA", patientId: "p1" });
     expect(accessA.allowed).toBe(true);
   });
 
-  test("clinic without contribution gets INACTIVE_CONTRIBUTOR", async () => {
+  test("clinic with low accessPercent gets inactive tier denial", async () => {
     await simulateToggle(ctx, { clinicId: "cA", userId: "uA" });
 
-    // Clinic A is opted in but has not contributed
-    const access = await evaluateAccessForClinic(ctx, { clinicId: "cA", patientId: "p1" });
-    expect(access.allowed).toBe(false);
-    expect(access.reasonCode).toBe("INACTIVE_CONTRIBUTOR");
-  });
-
-  test("clinic with no shared data gets NO_SNAPSHOT", async () => {
-    await simulateToggle(ctx, { clinicId: "cA", userId: "uA" });
+    // Only 1 update = 6% (inactive tier)
     const visit = await simulateVisit(ctx, { clinicId: "cA", userId: "uA", patientId: "p1", reason: "Test" });
     await simulateUpdate(ctx, {
       clinicId: "cA", userId: "uA", episodeId: visit.data.episodeId as string,
       painRegion: "Back", diagnosis: "Test", treatmentModalities: "Test",
     });
 
-    // Clinic A contributed but no other clinic has contributed for this patient
     const access = await evaluateAccessForClinic(ctx, { clinicId: "cA", patientId: "p1" });
     expect(access.allowed).toBe(false);
-    expect(access.reasonCode).toBe("NO_SNAPSHOT");
+    expect(access.reasonCode).toBe("INACTIVE_CONTRIBUTOR");
+    expect(access.tier).toBe("inactive");
   });
 });

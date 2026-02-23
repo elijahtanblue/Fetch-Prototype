@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import {
+  TIER_OVERRIDE_VALUES,
+  determineTier,
+  type AccessTier,
+} from "@/domain/policy/access";
 
 export const dynamic = "force-dynamic";
 
@@ -53,5 +58,61 @@ export async function PATCH(
     id: updatedClinic.id,
     name: updatedClinic.name,
     optedIn: updatedClinic.optedIn,
+  });
+}
+
+// Admin-only: set clinic access tier
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = session.user as unknown as Record<string, unknown>;
+
+  if (user.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const tier = body.tier as string | undefined;
+  if (!tier || !["full", "limited", "minimal", "inactive"].includes(tier)) {
+    return NextResponse.json(
+      { error: "Invalid tier. Must be: full, limited, minimal, or inactive" },
+      { status: 400 }
+    );
+  }
+
+  const clinic = await prisma.clinic.findUnique({ where: { id } });
+  if (!clinic) {
+    return NextResponse.json({ error: "Clinic not found" }, { status: 404 });
+  }
+
+  const newPercent = TIER_OVERRIDE_VALUES[tier as AccessTier];
+  const updatedClinic = await prisma.clinic.update({
+    where: { id },
+    data: {
+      accessPercent: newPercent,
+      lastDecayAt: new Date(),
+    },
+  });
+
+  return NextResponse.json({
+    id: updatedClinic.id,
+    name: updatedClinic.name,
+    accessPercent: updatedClinic.accessPercent,
+    tier: determineTier(updatedClinic.accessPercent),
   });
 }

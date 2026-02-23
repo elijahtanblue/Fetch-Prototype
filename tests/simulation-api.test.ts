@@ -160,7 +160,7 @@ describe("Simulation API Endpoints", () => {
     });
 
     test("returns access decision", async () => {
-      mockClinicFindUnique.mockResolvedValue({ optedIn: true, lastContributionAt: new Date() });
+      mockClinicFindUnique.mockResolvedValue({ optedIn: true, accessPercent: 80, lastDecayAt: new Date() });
       mockClinicalUpdateFindMany.mockResolvedValue([]);
 
       const { POST } = await import("@/app/api/simulation/access/route");

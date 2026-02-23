@@ -9,6 +9,9 @@
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 import {
   evaluateAccess,
+  applyDecay,
+  addPoints,
+  POINTS_PER_UPDATE,
   type AccessDecision,
 } from "@/domain/policy/access";
 import { getSharedUpdatesForPatient } from "@/domain/services/snapshot";
@@ -152,9 +155,26 @@ export async function simulateUpdate(
     },
   });
 
+  // Apply decay then add points
+  const clinic = await ctx.prisma.clinic.findUnique({
+    where: { id: input.clinicId },
+    select: { accessPercent: true, lastDecayAt: true },
+  });
+
+  const decayed = applyDecay(
+    clinic?.accessPercent ?? 0,
+    clinic?.lastDecayAt ?? null,
+    now
+  );
+  const newPercent = addPoints(decayed.accessPercent, POINTS_PER_UPDATE);
+
   await ctx.prisma.clinic.update({
     where: { id: input.clinicId },
-    data: { lastContributionAt: now },
+    data: {
+      lastContributionAt: now,
+      accessPercent: newPercent,
+      lastDecayAt: now,
+    },
   });
 
   await ctx.prisma.simulationEvent.create({
@@ -165,6 +185,8 @@ export async function simulateUpdate(
       metadata: JSON.stringify({
         updateId: update.id,
         episodeId: input.episodeId,
+        pointsEarned: POINTS_PER_UPDATE,
+        newAccessPercent: newPercent,
       }),
     },
   });
@@ -177,6 +199,7 @@ export async function simulateUpdate(
       episodeId: input.episodeId,
       painRegion: input.painRegion,
       diagnosis: input.diagnosis,
+      accessPercent: newPercent,
     },
   };
 }
@@ -189,12 +212,15 @@ export async function evaluateAccessForClinic(
 
   const clinic = await ctx.prisma.clinic.findUnique({
     where: { id: input.clinicId },
-    select: { optedIn: true, lastContributionAt: true },
+    select: { optedIn: true, accessPercent: true, lastDecayAt: true },
   });
 
   if (!clinic) {
     return { allowed: false, reasonCode: "OPTED_OUT", explanation: "Clinic not found" };
   }
+
+  // Apply decay
+  const decayed = applyDecay(clinic.accessPercent, clinic.lastDecayAt, now);
 
   const sharedUpdates = await getSharedUpdatesForPatient(
     ctx.prisma,
@@ -204,8 +230,7 @@ export async function evaluateAccessForClinic(
 
   return evaluateAccess({
     optedIn: clinic.optedIn,
-    lastContributionAt: clinic.lastContributionAt,
-    now,
+    accessPercent: decayed.accessPercent,
     hasSnapshot: sharedUpdates.length > 0,
   });
 }
@@ -249,7 +274,6 @@ export async function replayEvents(
         break;
     }
 
-    // After each event, evaluate access for the viewer
     const accessDecision = await evaluateAccessForClinic(ctx, {
       clinicId: input.viewerClinicId,
       patientId: input.patientId,

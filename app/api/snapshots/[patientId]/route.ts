@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { evaluateAccess } from "@/domain/policy/access";
+import {
+  evaluateAccess,
+  applyDecay,
+  filterSnapshotByTier,
+  type SnapshotEntry,
+} from "@/domain/policy/access";
 import { getSharedUpdatesForPatient } from "@/domain/services/snapshot";
 
 export const dynamic = "force-dynamic";
@@ -20,17 +25,34 @@ export async function GET(
   const clinicId = user.clinicId as string;
   const { patientId } = await params;
 
-  // Fetch clinic data for policy evaluation
   const clinic = await prisma.clinic.findUnique({
     where: { id: clinicId },
-    select: { optedIn: true, lastContributionAt: true },
+    select: { optedIn: true, accessPercent: true, lastDecayAt: true },
   });
 
   if (!clinic) {
     return NextResponse.json({ error: "Clinic not found" }, { status: 404 });
   }
 
-  // Fetch snapshot data via shared service
+  // Apply time decay on-request
+  const now = new Date();
+  const decayed = applyDecay(clinic.accessPercent, clinic.lastDecayAt, now);
+
+  // Persist decay if it changed
+  if (
+    decayed.accessPercent !== clinic.accessPercent ||
+    decayed.lastDecayAt !== clinic.lastDecayAt
+  ) {
+    await prisma.clinic.update({
+      where: { id: clinicId },
+      data: {
+        accessPercent: decayed.accessPercent,
+        lastDecayAt: decayed.lastDecayAt,
+      },
+    });
+  }
+
+  // Fetch snapshot data
   const sharedUpdates = await getSharedUpdatesForPatient(
     prisma,
     patientId,
@@ -39,24 +61,33 @@ export async function GET(
 
   const hasSnapshot = sharedUpdates.length > 0;
 
-  // Route ALL access decisions through the canonical policy module
+  // Route through canonical policy module
   const decision = evaluateAccess({
     optedIn: clinic.optedIn,
-    lastContributionAt: clinic.lastContributionAt,
-    now: new Date(),
+    accessPercent: decayed.accessPercent,
     hasSnapshot,
   });
 
   if (!decision.allowed) {
     return NextResponse.json({
       accessDecision: "denied",
+      tier: decision.tier,
+      accessPercent: decision.accessPercent,
       reasonCode: decision.reasonCode,
       explanation: decision.explanation,
     });
   }
 
+  // Filter snapshot fields based on tier (server-enforced)
+  const filteredSnapshot = filterSnapshotByTier(
+    sharedUpdates as SnapshotEntry[],
+    decision.tier!
+  );
+
   return NextResponse.json({
     accessDecision: "allowed",
-    snapshot: sharedUpdates,
+    tier: decision.tier,
+    accessPercent: decision.accessPercent,
+    snapshot: filteredSnapshot,
   });
 }

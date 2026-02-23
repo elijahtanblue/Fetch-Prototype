@@ -7,6 +7,8 @@
 
 const mockEpisodeFindUnique = jest.fn();
 const mockUpdateCreate = jest.fn();
+const mockUpdateCount = jest.fn();
+const mockClinicFindUnique = jest.fn();
 const mockClinicUpdate = jest.fn(async () => ({}));
 const mockEventCreate = jest.fn(async () => ({}));
 
@@ -17,8 +19,8 @@ jest.mock("@prisma/adapter-neon", () => ({
 jest.mock("@/lib/generated/prisma/client", () => ({
   PrismaClient: jest.fn(() => ({
     episode: { findUnique: mockEpisodeFindUnique },
-    clinicalUpdate: { create: mockUpdateCreate },
-    clinic: { update: mockClinicUpdate },
+    clinicalUpdate: { create: mockUpdateCreate, count: mockUpdateCount },
+    clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     simulationEvent: { create: mockEventCreate },
   })),
 }));
@@ -48,8 +50,14 @@ describe("POST /api/updates - Validation & Persistence", () => {
   beforeEach(() => {
     mockEpisodeFindUnique.mockReset();
     mockUpdateCreate.mockReset();
+    mockUpdateCount.mockReset();
+    mockClinicFindUnique.mockReset();
     mockClinicUpdate.mockReset();
     mockEventCreate.mockClear();
+
+    // Default mocks for points system
+    mockClinicFindUnique.mockResolvedValue({ accessPercent: 50, lastDecayAt: new Date() });
+    mockUpdateCount.mockResolvedValue(0);
   });
 
   test("returns 400 when episodeId is missing", async () => {
@@ -89,7 +97,7 @@ describe("POST /api/updates - Validation & Persistence", () => {
   });
 
   test("creates clinical update with correct data", async () => {
-    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1" });
+    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1", patientId: "p1" });
     mockUpdateCreate.mockResolvedValue({ id: "cu1", ...validBody });
 
     const { POST } = await import("@/app/api/updates/route");
@@ -110,7 +118,7 @@ describe("POST /api/updates - Validation & Persistence", () => {
   });
 
   test("returns 201 on successful creation", async () => {
-    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1" });
+    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1", patientId: "p1" });
     mockUpdateCreate.mockResolvedValue({ id: "cu1", ...validBody });
 
     const { POST } = await import("@/app/api/updates/route");

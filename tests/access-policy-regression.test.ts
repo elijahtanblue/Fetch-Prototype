@@ -49,26 +49,21 @@ describe("Access Policy Regression - No Duplicated Logic", () => {
     expect(filesExportingEvaluateAccess).toEqual([]);
   });
 
-  test("no route handler contains inline access decision logic (optedIn + lastContributionAt checks)", () => {
+  test("no route handler contains inline access decision logic", () => {
     const apiFiles = sourceFiles.filter((f) => f.includes(path.join("app", "api")));
 
     const filesWithInlineAccessLogic = apiFiles.filter((f) => {
       if (f.includes(path.join("snapshots"))) {
         // The snapshot route is allowed to CALL the policy — but not implement its own
         const content = fs.readFileSync(f, "utf-8");
-        // Check it imports from policy module
         const importsPolicy = content.includes("domain/policy/access");
-        // Check it does NOT have its own optedIn/lastContributionAt conditional logic
         const hasInlineLogic =
           content.includes("if (!clinic.optedIn)") ||
-          content.includes("if (clinic.optedIn ===") ||
-          (content.includes("lastContributionAt") &&
-            content.includes("30") &&
-            !content.includes("evaluateAccess"));
+          content.includes("if (clinic.optedIn ===");
         return !importsPolicy || hasInlineLogic;
       }
 
-      // Other API routes should not have access decision logic
+      // Other API routes should not have access decision reason codes
       const content = fs.readFileSync(f, "utf-8");
       return (
         content.includes("OPTED_OUT") ||

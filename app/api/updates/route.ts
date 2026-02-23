@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import {
+  POINTS_PER_UPDATE,
+  ANTI_SPAM_CAP,
+  ANTI_SPAM_WINDOW_DAYS,
+  addPoints,
+  applyDecay,
+} from "@/domain/policy/access";
 
 export const dynamic = "force-dynamic";
 
@@ -58,9 +65,44 @@ export async function POST(request: Request) {
     },
   });
 
+  // Apply decay before adding points
+  const now = new Date();
+  const clinic = await prisma.clinic.findUnique({
+    where: { id: clinicId },
+    select: { accessPercent: true, lastDecayAt: true },
+  });
+
+  const decayed = applyDecay(
+    clinic?.accessPercent ?? 0,
+    clinic?.lastDecayAt ?? null,
+    now
+  );
+
+  // Anti-spam check: count point-earning updates for this patient in last 7 days
+  const spamWindowStart = new Date(
+    now.getTime() - ANTI_SPAM_WINDOW_DAYS * 24 * 60 * 60 * 1000
+  );
+  const recentUpdatesForPatient = await prisma.clinicalUpdate.count({
+    where: {
+      clinicId,
+      episode: { patientId: episode.patientId },
+      createdAt: { gte: spamWindowStart },
+      id: { not: clinicalUpdate.id }, // exclude current update
+    },
+  });
+
+  const earnedPoints = recentUpdatesForPatient < ANTI_SPAM_CAP;
+  const newPercent = earnedPoints
+    ? addPoints(decayed.accessPercent, POINTS_PER_UPDATE)
+    : decayed.accessPercent;
+
   await prisma.clinic.update({
     where: { id: clinicId },
-    data: { lastContributionAt: new Date() },
+    data: {
+      lastContributionAt: now,
+      accessPercent: newPercent,
+      lastDecayAt: now,
+    },
   });
 
   await prisma.simulationEvent.create({
@@ -71,9 +113,14 @@ export async function POST(request: Request) {
       metadata: JSON.stringify({
         clinicalUpdateId: clinicalUpdate.id,
         episodeId,
+        pointsEarned: earnedPoints ? POINTS_PER_UPDATE : 0,
+        newAccessPercent: newPercent,
       }),
     },
   });
 
-  return NextResponse.json(clinicalUpdate, { status: 201 });
+  return NextResponse.json(
+    { ...clinicalUpdate, pointsEarned: earnedPoints ? POINTS_PER_UPDATE : 0 },
+    { status: 201 }
+  );
 }

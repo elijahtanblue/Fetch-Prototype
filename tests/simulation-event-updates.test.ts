@@ -9,6 +9,8 @@ const mockPatientFindUnique = jest.fn();
 const mockEpisodeCreate = jest.fn();
 const mockEpisodeFindUnique = jest.fn();
 const mockUpdateCreate = jest.fn();
+const mockUpdateCount = jest.fn();
+const mockClinicFindUnique = jest.fn();
 const mockClinicUpdate = jest.fn(async () => ({}));
 const mockEventCreate = jest.fn(async () => ({}));
 
@@ -20,8 +22,8 @@ jest.mock("@/lib/generated/prisma/client", () => ({
   PrismaClient: jest.fn(() => ({
     patient: { findUnique: mockPatientFindUnique },
     episode: { create: mockEpisodeCreate, findUnique: mockEpisodeFindUnique },
-    clinicalUpdate: { create: mockUpdateCreate },
-    clinic: { update: mockClinicUpdate },
+    clinicalUpdate: { create: mockUpdateCreate, count: mockUpdateCount },
+    clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     simulationEvent: { create: mockEventCreate },
   })),
 }));
@@ -94,12 +96,18 @@ describe("SimulationEvent - CLINICAL_UPDATE", () => {
   beforeEach(() => {
     mockEpisodeFindUnique.mockReset();
     mockUpdateCreate.mockReset();
+    mockUpdateCount.mockReset();
+    mockClinicFindUnique.mockReset();
     mockClinicUpdate.mockReset();
     mockEventCreate.mockClear();
+
+    // Default mocks for points system
+    mockClinicFindUnique.mockResolvedValue({ accessPercent: 50, lastDecayAt: new Date() });
+    mockUpdateCount.mockResolvedValue(0);
   });
 
   test("creates a CLINICAL_UPDATE SimulationEvent when update is created", async () => {
-    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1" });
+    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1", patientId: "p1" });
     mockUpdateCreate.mockResolvedValue({ id: "cu1" });
 
     const { POST } = await import("@/app/api/updates/route");
@@ -123,7 +131,7 @@ describe("SimulationEvent - CLINICAL_UPDATE", () => {
   });
 
   test("CLINICAL_UPDATE event metadata contains clinicalUpdateId and episodeId", async () => {
-    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1" });
+    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1", patientId: "p1" });
     mockUpdateCreate.mockResolvedValue({ id: "cu1" });
 
     const { POST } = await import("@/app/api/updates/route");

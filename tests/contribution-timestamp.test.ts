@@ -1,12 +1,14 @@
 /**
- * Tests for clinic.lastContributionAt update
+ * Tests for clinic contribution update + points system
  *
  * Verifies that creating a clinical update sets the clinic's
- * lastContributionAt timestamp.
+ * lastContributionAt timestamp and adds points to accessPercent.
  */
 
 const mockEpisodeFindUnique = jest.fn();
 const mockUpdateCreate = jest.fn();
+const mockUpdateCount = jest.fn();
+const mockClinicFindUnique = jest.fn();
 const mockClinicUpdate = jest.fn(async () => ({}));
 const mockEventCreate = jest.fn(async () => ({}));
 
@@ -17,8 +19,8 @@ jest.mock("@prisma/adapter-neon", () => ({
 jest.mock("@/lib/generated/prisma/client", () => ({
   PrismaClient: jest.fn(() => ({
     episode: { findUnique: mockEpisodeFindUnique },
-    clinicalUpdate: { create: mockUpdateCreate },
-    clinic: { update: mockClinicUpdate },
+    clinicalUpdate: { create: mockUpdateCreate, count: mockUpdateCount },
+    clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     simulationEvent: { create: mockEventCreate },
   })),
 }));
@@ -44,18 +46,23 @@ const validBody = {
   treatmentModalities: "Manual therapy",
 };
 
-describe("Contribution Timestamp Update", () => {
+describe("Contribution Timestamp + Points Update", () => {
   beforeEach(() => {
     mockEpisodeFindUnique.mockReset();
     mockUpdateCreate.mockReset();
+    mockUpdateCount.mockReset();
+    mockClinicFindUnique.mockReset();
     mockClinicUpdate.mockReset();
     mockEventCreate.mockClear();
+
+    // Default: episode exists, clinic has accessPercent 50, no spam
+    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1", patientId: "p1" });
+    mockUpdateCreate.mockResolvedValue({ id: "cu1", ...validBody });
+    mockClinicFindUnique.mockResolvedValue({ accessPercent: 50, lastDecayAt: new Date() });
+    mockUpdateCount.mockResolvedValue(0);
   });
 
-  test("updates clinic.lastContributionAt after creating an update", async () => {
-    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1" });
-    mockUpdateCreate.mockResolvedValue({ id: "cu1", ...validBody });
-
+  test("updates clinic after creating an update", async () => {
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest(validBody));
 
@@ -63,9 +70,6 @@ describe("Contribution Timestamp Update", () => {
   });
 
   test("updates the correct clinic (user's clinicId)", async () => {
-    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1" });
-    mockUpdateCreate.mockResolvedValue({ id: "cu1", ...validBody });
-
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest(validBody));
 
@@ -77,9 +81,6 @@ describe("Contribution Timestamp Update", () => {
   });
 
   test("sets lastContributionAt to a Date", async () => {
-    mockEpisodeFindUnique.mockResolvedValue({ id: "ep1" });
-    mockUpdateCreate.mockResolvedValue({ id: "cu1", ...validBody });
-
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest(validBody));
 
@@ -87,7 +88,17 @@ describe("Contribution Timestamp Update", () => {
     expect(updateArg.data.lastContributionAt).toBeInstanceOf(Date);
   });
 
-  test("does NOT update lastContributionAt when validation fails", async () => {
+  test("adds points to accessPercent when under spam cap", async () => {
+    mockUpdateCount.mockResolvedValue(0); // no prior updates
+
+    const { POST } = await import("@/app/api/updates/route");
+    await POST(makeRequest(validBody));
+
+    const updateArg = mockClinicUpdate.mock.calls[0][0];
+    expect(updateArg.data.accessPercent).toBe(56); // 50 + 6
+  });
+
+  test("does NOT update clinic when validation fails", async () => {
     const { POST } = await import("@/app/api/updates/route");
     await POST(makeRequest({ episodeId: "ep1" })); // missing required fields
 

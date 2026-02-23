@@ -4,19 +4,23 @@ import { useState } from "react";
 
 interface SnapshotEntry {
   id: string;
-  clinicName: string;
-  episodeReason: string;
-  episodeStartDate: string;
-  painRegion: string;
-  diagnosis: string;
-  treatmentModalities: string;
-  redFlags: boolean;
-  notes: string;
-  createdAt: string;
+  clinicName?: string;
+  episodeReason?: string;
+  episodeStartDate?: string;
+  painRegion?: string;
+  diagnosis?: string;
+  treatmentModalities?: string;
+  redFlags?: boolean;
+  notes?: string;
+  createdAt?: string;
+  historyExists?: boolean;
+  snapshotLocked?: boolean;
 }
 
 interface SnapshotResponse {
   accessDecision: "allowed" | "denied";
+  tier?: string;
+  accessPercent?: number;
   snapshot?: SnapshotEntry[];
   reasonCode?: string;
   explanation?: string;
@@ -26,6 +30,12 @@ interface PatientSnapshotProps {
   patientId: string;
   patientName: string;
 }
+
+const TIER_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  full: { bg: "bg-green-100", text: "text-green-800", label: "Full Access" },
+  limited: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Limited" },
+  minimal: { bg: "bg-orange-100", text: "text-orange-800", label: "Minimal" },
+};
 
 export default function PatientSnapshot({
   patientId,
@@ -100,9 +110,20 @@ export default function PatientSnapshot({
                 className="space-y-2"
                 data-testid="snapshot-panel"
               >
+                {/* Tier badge */}
+                {data.tier && TIER_BADGE[data.tier] && (
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${TIER_BADGE[data.tier].bg} ${TIER_BADGE[data.tier].text}`}>
+                      {TIER_BADGE[data.tier].label}
+                    </span>
+                    <span className="text-xs text-gray-500">{data.accessPercent}%</span>
+                  </div>
+                )}
+
                 <p className="text-xs font-medium text-[var(--kinetic-gray)]">
                   Shared history for {patientName} from other clinics:
                 </p>
+
                 {data.snapshot.length === 0 ? (
                   <p className="text-xs text-[var(--kinetic-gray)]">
                     No shared records available.
@@ -113,35 +134,74 @@ export default function PatientSnapshot({
                       key={entry.id}
                       className="bg-blue-50 rounded p-2 text-xs border border-blue-100"
                     >
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-medium text-blue-900">
-                          {entry.clinicName}
-                        </span>
-                        <span className="text-blue-400">|</span>
-                        <span className="text-blue-700">
-                          {entry.episodeReason}
-                        </span>
-                        {entry.redFlags && (
-                          <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-xs font-medium">
-                            Red Flag
+                      {/* Minimal tier: locked indicator */}
+                      {entry.snapshotLocked && (
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded text-xs font-medium">
+                            Snapshot Locked
                           </span>
-                        )}
-                      </div>
-                      <p className="text-blue-800">
-                        <strong>Region:</strong> {entry.painRegion} |{" "}
-                        <strong>Dx:</strong> {entry.diagnosis}
-                      </p>
-                      <p className="text-blue-700">
-                        <strong>Tx:</strong> {entry.treatmentModalities}
-                      </p>
+                          {entry.historyExists && (
+                            <span className="text-blue-600">History exists</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Pain region (shown for minimal+ tiers) */}
+                      {entry.painRegion && (
+                        <p className="text-blue-800">
+                          <strong>Region:</strong> {entry.painRegion}
+                        </p>
+                      )}
+
+                      {/* Full header (limited+ tiers) */}
+                      {entry.clinicName && (
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="font-medium text-blue-900">
+                            {entry.clinicName}
+                          </span>
+                          {entry.episodeReason && (
+                            <>
+                              <span className="text-blue-400">|</span>
+                              <span className="text-blue-700">
+                                {entry.episodeReason}
+                              </span>
+                            </>
+                          )}
+                          {entry.redFlags && (
+                            <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-xs font-medium">
+                              Red Flag
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Diagnosis (limited+ tiers) */}
+                      {entry.diagnosis && !entry.snapshotLocked && (
+                        <p className="text-blue-800">
+                          <strong>Region:</strong> {entry.painRegion} |{" "}
+                          <strong>Dx:</strong> {entry.diagnosis}
+                        </p>
+                      )}
+
+                      {/* Treatment (limited+ tiers) */}
+                      {entry.treatmentModalities && (
+                        <p className="text-blue-700">
+                          <strong>Tx:</strong> {entry.treatmentModalities}
+                        </p>
+                      )}
+
+                      {/* Notes (full or truncated for limited) */}
                       {entry.notes && (
                         <p className="text-blue-600 italic mt-0.5">
                           {entry.notes}
                         </p>
                       )}
-                      <p className="text-blue-400 mt-1">
-                        {new Date(entry.createdAt).toLocaleDateString()}
-                      </p>
+
+                      {entry.createdAt && (
+                        <p className="text-blue-400 mt-1">
+                          {new Date(entry.createdAt).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
                   ))
                 )}

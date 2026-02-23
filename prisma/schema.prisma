@@ -12,6 +12,8 @@ model Clinic {
   name               String
   optedIn            Boolean   @default(false)
   lastContributionAt DateTime?
+  accessPercent      Int       @default(0)
+  lastDecayAt        DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

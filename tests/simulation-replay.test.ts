@@ -2,6 +2,7 @@
  * Deterministic replay tests.
  *
  * Verifies that replaying the same event sequence produces identical results.
+ * Uses accessPercent-based tier system.
  */
 
 import {
@@ -11,9 +12,9 @@ import {
 
 // Stateful mock that tracks clinic state across calls
 function createReplayMockPrisma() {
-  const clinicState: Record<string, { optedIn: boolean; lastContributionAt: Date | null }> = {
-    cA: { optedIn: false, lastContributionAt: null },
-    cB: { optedIn: false, lastContributionAt: null },
+  const clinicState: Record<string, { optedIn: boolean; accessPercent: number; lastDecayAt: Date | null; lastContributionAt: Date | null }> = {
+    cA: { optedIn: false, accessPercent: 0, lastDecayAt: null, lastContributionAt: null },
+    cB: { optedIn: false, accessPercent: 0, lastDecayAt: null, lastContributionAt: null },
   };
   const updates: Array<{ clinicId: string; patientId: string }> = [];
   let idCounter = 0;
@@ -59,8 +60,8 @@ function createReplayMockPrisma() {
       create: jest.fn(async () => ({})),
     },
     reset() {
-      clinicState.cA = { optedIn: false, lastContributionAt: null };
-      clinicState.cB = { optedIn: false, lastContributionAt: null };
+      clinicState.cA = { optedIn: false, accessPercent: 0, lastDecayAt: null, lastContributionAt: null };
+      clinicState.cB = { optedIn: false, accessPercent: 0, lastDecayAt: null, lastContributionAt: null };
       updates.length = 0;
       idCounter = 0;
     },
@@ -112,7 +113,7 @@ describe("Simulation Replay - Deterministic Behavior", () => {
 
     expect(results).toHaveLength(1);
     expect(results[0].action).toBe("TOGGLE_OPT_IN");
-    // After toggle, clinic A is opted in but hasn't contributed → INACTIVE_CONTRIBUTOR
+    // After toggle, clinic A is opted in but accessPercent is 0 → INACTIVE_CONTRIBUTOR
     expect(results[0].accessDecision?.allowed).toBe(false);
     expect(results[0].accessDecision?.reasonCode).toBe("INACTIVE_CONTRIBUTOR");
   });

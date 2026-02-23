@@ -17,15 +17,15 @@ async function main() {
 
   // Create 3 clinics
   const clinicA = await prisma.clinic.create({
-    data: { name: "City Physio", optedIn: true },
+    data: { name: "City Physio", optedIn: true, accessPercent: 80, lastDecayAt: new Date() },
   });
 
   const clinicB = await prisma.clinic.create({
-    data: { name: "Harbour Health", optedIn: false },
+    data: { name: "Harbour Health", optedIn: false, accessPercent: 0 },
   });
 
   const clinicC = await prisma.clinic.create({
-    data: { name: "Summit Rehabilitation", optedIn: true },
+    data: { name: "Summit Rehabilitation", optedIn: true, accessPercent: 50, lastDecayAt: new Date() },
   });
 
   // Create 3 users (one per clinic)

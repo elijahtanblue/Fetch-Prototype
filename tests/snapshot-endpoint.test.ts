@@ -2,10 +2,11 @@
  * Endpoint integration tests for GET /api/snapshots/[patientId]
  *
  * Validates that the API response correctly maps policy decisions
- * (allowed/denied) to the response format.
+ * (allowed/denied) with tier-based field filtering.
  */
 
 const mockClinicFindUnique = jest.fn();
+const mockClinicUpdate = jest.fn();
 const mockUpdateFindMany = jest.fn();
 
 jest.mock("@prisma/adapter-neon", () => ({
@@ -14,7 +15,7 @@ jest.mock("@prisma/adapter-neon", () => ({
 
 jest.mock("@/lib/generated/prisma/client", () => ({
   PrismaClient: jest.fn(() => ({
-    clinic: { findUnique: mockClinicFindUnique },
+    clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     clinicalUpdate: { findMany: mockUpdateFindMany },
   })),
 }));
@@ -29,16 +30,19 @@ function makeParams(patientId: string) {
   return { params: Promise.resolve({ patientId }) };
 }
 
-describe("GET /api/snapshots/[patientId] - Policy Integration", () => {
+describe("GET /api/snapshots/[patientId] - Tier Integration", () => {
   beforeEach(() => {
     mockClinicFindUnique.mockReset();
+    mockClinicUpdate.mockReset();
     mockUpdateFindMany.mockReset();
+    mockClinicUpdate.mockResolvedValue({});
   });
 
   test("returns denied with OPTED_OUT when clinic is not opted in", async () => {
     mockClinicFindUnique.mockResolvedValue({
       optedIn: false,
-      lastContributionAt: new Date(),
+      accessPercent: 80,
+      lastDecayAt: new Date(),
     });
     mockUpdateFindMany.mockResolvedValue([]);
 
@@ -52,10 +56,11 @@ describe("GET /api/snapshots/[patientId] - Policy Integration", () => {
     expect(data.explanation).toBeDefined();
   });
 
-  test("returns denied with INACTIVE_CONTRIBUTOR when no contributions", async () => {
+  test("returns denied with INACTIVE_CONTRIBUTOR when accessPercent is 0", async () => {
     mockClinicFindUnique.mockResolvedValue({
       optedIn: true,
-      lastContributionAt: null,
+      accessPercent: 0,
+      lastDecayAt: new Date(),
     });
     mockUpdateFindMany.mockResolvedValue([]);
 
@@ -66,41 +71,14 @@ describe("GET /api/snapshots/[patientId] - Policy Integration", () => {
 
     expect(data.accessDecision).toBe("denied");
     expect(data.reasonCode).toBe("INACTIVE_CONTRIBUTOR");
-  });
-
-  test("returns denied with INACTIVE_CONTRIBUTOR when contribution expired", async () => {
-    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
-    mockClinicFindUnique.mockResolvedValue({
-      optedIn: true,
-      lastContributionAt: sixtyDaysAgo,
-    });
-    mockUpdateFindMany.mockResolvedValue([
-      {
-        id: "cu1",
-        painRegion: "Back",
-        diagnosis: "Sprain",
-        treatmentModalities: "Ice",
-        redFlags: false,
-        notes: "",
-        createdAt: new Date(),
-        episode: { reason: "Pain", startDate: new Date() },
-        clinic: { name: "Other Clinic" },
-      },
-    ]);
-
-    const { GET } = await import("@/app/api/snapshots/[patientId]/route");
-    const req = new Request("http://localhost/api/snapshots/p1");
-    const res = await GET(req, makeParams("p1"));
-    const data = await res.json();
-
-    expect(data.accessDecision).toBe("denied");
-    expect(data.reasonCode).toBe("INACTIVE_CONTRIBUTOR");
+    expect(data.tier).toBe("inactive");
   });
 
   test("returns denied with NO_SNAPSHOT when no shared updates exist", async () => {
     mockClinicFindUnique.mockResolvedValue({
       optedIn: true,
-      lastContributionAt: new Date(),
+      accessPercent: 80,
+      lastDecayAt: new Date(),
     });
     mockUpdateFindMany.mockResolvedValue([]);
 
@@ -113,10 +91,11 @@ describe("GET /api/snapshots/[patientId] - Policy Integration", () => {
     expect(data.reasonCode).toBe("NO_SNAPSHOT");
   });
 
-  test("returns allowed with snapshot data when all conditions met", async () => {
+  test("returns allowed with full tier and all fields when accessPercent >= 70", async () => {
     mockClinicFindUnique.mockResolvedValue({
       optedIn: true,
-      lastContributionAt: new Date(),
+      accessPercent: 80,
+      lastDecayAt: new Date(),
     });
     mockUpdateFindMany.mockResolvedValue([
       {
@@ -138,10 +117,47 @@ describe("GET /api/snapshots/[patientId] - Policy Integration", () => {
     const data = await res.json();
 
     expect(data.accessDecision).toBe("allowed");
+    expect(data.tier).toBe("full");
+    expect(data.accessPercent).toBe(80);
     expect(data.snapshot).toHaveLength(1);
     expect(data.snapshot[0].clinicName).toBe("Harbour Health");
     expect(data.snapshot[0].painRegion).toBe("Lower back");
     expect(data.snapshot[0].redFlags).toBe(true);
+    expect(data.snapshot[0].notes).toBe("Improving");
+  });
+
+  test("returns allowed with limited tier filtering when accessPercent 40-69", async () => {
+    mockClinicFindUnique.mockResolvedValue({
+      optedIn: true,
+      accessPercent: 50,
+      lastDecayAt: new Date(),
+    });
+    mockUpdateFindMany.mockResolvedValue([
+      {
+        id: "cu1", painRegion: "Back", diagnosis: "Sprain",
+        treatmentModalities: "Ice", redFlags: true, notes: "Note 1",
+        createdAt: new Date(), episode: { reason: "Pain", startDate: new Date() },
+        clinic: { name: "Other Clinic" },
+      },
+      {
+        id: "cu2", painRegion: "Neck", diagnosis: "Strain",
+        treatmentModalities: "Heat", redFlags: false, notes: "Note 2",
+        createdAt: new Date(), episode: { reason: "Check", startDate: new Date() },
+        clinic: { name: "Another Clinic" },
+      },
+    ]);
+
+    const { GET } = await import("@/app/api/snapshots/[patientId]/route");
+    const req = new Request("http://localhost/api/snapshots/p1");
+    const res = await GET(req, makeParams("p1"));
+    const data = await res.json();
+
+    expect(data.accessDecision).toBe("allowed");
+    expect(data.tier).toBe("limited");
+    // Limited: only most recent, no redFlags field
+    expect(data.snapshot).toHaveLength(1);
+    expect(data.snapshot[0].diagnosis).toBe("Sprain");
+    expect(data.snapshot[0].redFlags).toBeUndefined();
   });
 
   test("returns 401 when not authenticated", async () => {

@@ -30,10 +30,10 @@ describe("SimulationPanel", () => {
 
     expect(screen.getByTestId("clinic-selector")).toBeInTheDocument();
     expect(screen.getByTestId("patient-selector")).toBeInTheDocument();
-    expect(screen.getByText("City Physio")).toBeInTheDocument();
-    expect(screen.getByText("Harbour Health")).toBeInTheDocument();
-    expect(screen.getByText("John Smith")).toBeInTheDocument();
-    expect(screen.getByText("Winston Liang")).toBeInTheDocument();
+    expect(screen.getAllByText("City Physio").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Harbour Health").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("John Smith").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Winston Liang").length).toBeGreaterThanOrEqual(1);
   });
 
   test("renders action buttons", () => {
