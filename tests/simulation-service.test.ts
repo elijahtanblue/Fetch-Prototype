@@ -21,15 +21,20 @@ function makeMockPrisma() {
     },
     episode: {
       create: jest.fn(),
+      findUnique: jest.fn(),
     },
     clinicalUpdate: {
       create: jest.fn(),
       findMany: jest.fn(),
+      count: jest.fn(),
     },
     patient: {
       findUnique: jest.fn().mockResolvedValue({ consentStatus: "SHARE" }),
     },
     simulationEvent: {
+      create: jest.fn(),
+    },
+    accessEvent: {
       create: jest.fn(),
     },
   };
@@ -105,10 +110,16 @@ describe("Simulation Service", () => {
   });
 
   describe("simulateUpdate", () => {
-    test("creates clinical update, adds points, and updates lastContributionAt", async () => {
+    test("creates clinical update, awards points via ledger, and updates timestamps", async () => {
       mockPrisma.clinicalUpdate.create.mockResolvedValue({ id: "cu1" });
-      mockPrisma.clinic.findUnique.mockResolvedValue({ accessPercent: 50, lastDecayAt: new Date() });
+      // First findUnique for decay, second for awardPoints
+      mockPrisma.clinic.findUnique
+        .mockResolvedValueOnce({ accessPercent: 50, lastDecayAt: new Date() })
+        .mockResolvedValueOnce({ accessPercent: 50 });
       mockPrisma.clinic.update.mockResolvedValue({});
+      mockPrisma.episode.findUnique.mockResolvedValue({ patientId: "p1" });
+      mockPrisma.clinicalUpdate.count.mockResolvedValue(0); // no anti-spam
+      mockPrisma.accessEvent.create.mockResolvedValue({});
       mockPrisma.simulationEvent.create.mockResolvedValue({});
 
       const result = await simulateUpdate(ctx, {
@@ -120,19 +131,41 @@ describe("Simulation Service", () => {
       expect(result.success).toBe(true);
       expect(result.action).toBe("CLINICAL_UPDATE");
       expect(result.data.accessPercent).toBe(56); // 50 + 6
-      expect(mockPrisma.clinic.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            accessPercent: 56,
-          }),
-        })
-      );
+      // Verify AccessEvent ledger entry was created
+      expect(mockPrisma.accessEvent.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          clinicId: "c1",
+          delta: 6,
+          reasonCode: "STRUCTURED_UPDATE",
+        }),
+      });
+    });
+
+    test("respects anti-spam cap and does not award points beyond limit", async () => {
+      mockPrisma.clinicalUpdate.create.mockResolvedValue({ id: "cu4" });
+      mockPrisma.clinic.findUnique
+        .mockResolvedValueOnce({ accessPercent: 50, lastDecayAt: new Date() });
+      mockPrisma.clinic.update.mockResolvedValue({});
+      mockPrisma.episode.findUnique.mockResolvedValue({ patientId: "p1" });
+      mockPrisma.clinicalUpdate.count.mockResolvedValue(3); // at cap
+      mockPrisma.simulationEvent.create.mockResolvedValue({});
+
+      const result = await simulateUpdate(ctx, {
+        clinicId: "c1", userId: "u1", episodeId: "ep1",
+        painRegion: "Back", diagnosis: "Sprain",
+        treatmentModalities: "Ice",
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data.accessPercent).toBe(50); // no points earned
+      expect(mockPrisma.accessEvent.create).not.toHaveBeenCalled();
     });
   });
 
   describe("evaluateAccessForClinic", () => {
     test("returns OPTED_OUT when clinic is not opted in", async () => {
       mockPrisma.clinic.findUnique.mockResolvedValue({ optedIn: false, accessPercent: 80, lastDecayAt: new Date() });
+      mockPrisma.clinic.update.mockResolvedValue({});
       mockPrisma.clinicalUpdate.findMany.mockResolvedValue([]);
 
       const decision = await evaluateAccessForClinic(ctx, { clinicId: "c1", patientId: "p1" });
@@ -142,6 +175,7 @@ describe("Simulation Service", () => {
 
     test("returns INACTIVE_CONTRIBUTOR when accessPercent is low", async () => {
       mockPrisma.clinic.findUnique.mockResolvedValue({ optedIn: true, accessPercent: 5, lastDecayAt: new Date() });
+      mockPrisma.clinic.update.mockResolvedValue({});
       mockPrisma.clinicalUpdate.findMany.mockResolvedValue([]);
 
       const decision = await evaluateAccessForClinic(ctx, { clinicId: "c1", patientId: "p1" });
@@ -151,6 +185,7 @@ describe("Simulation Service", () => {
 
     test("returns NO_SNAPSHOT when no shared data exists", async () => {
       mockPrisma.clinic.findUnique.mockResolvedValue({ optedIn: true, accessPercent: 80, lastDecayAt: new Date() });
+      mockPrisma.clinic.update.mockResolvedValue({});
       mockPrisma.clinicalUpdate.findMany.mockResolvedValue([]);
 
       const decision = await evaluateAccessForClinic(ctx, { clinicId: "c1", patientId: "p1" });
@@ -160,6 +195,7 @@ describe("Simulation Service", () => {
 
     test("returns allowed with tier when all conditions met", async () => {
       mockPrisma.clinic.findUnique.mockResolvedValue({ optedIn: true, accessPercent: 80, lastDecayAt: new Date() });
+      mockPrisma.clinic.update.mockResolvedValue({});
       mockPrisma.clinicalUpdate.findMany.mockResolvedValue([
         {
           id: "cu1", painRegion: "Back", diagnosis: "Sprain",
@@ -172,6 +208,30 @@ describe("Simulation Service", () => {
       const decision = await evaluateAccessForClinic(ctx, { clinicId: "c1", patientId: "p1" });
       expect(decision.allowed).toBe(true);
       expect(decision.tier).toBe("full");
+    });
+
+    test("persists decay and logs AccessEvent when access is checked", async () => {
+      const twoDaysAgo = new Date("2026-02-21T12:00:00Z");
+      mockPrisma.clinic.findUnique.mockResolvedValue({ optedIn: true, accessPercent: 80, lastDecayAt: twoDaysAgo });
+      mockPrisma.clinic.update.mockResolvedValue({});
+      mockPrisma.accessEvent.create.mockResolvedValue({});
+      mockPrisma.clinicalUpdate.findMany.mockResolvedValue([]);
+
+      await evaluateAccessForClinic(ctx, { clinicId: "c1", patientId: "p1" });
+
+      // Should persist decayed value (80 - 2 days = 78)
+      expect(mockPrisma.clinic.update).toHaveBeenCalledWith({
+        where: { id: "c1" },
+        data: expect.objectContaining({ accessPercent: 78 }),
+      });
+      // Should log decay event
+      expect(mockPrisma.accessEvent.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          clinicId: "c1",
+          delta: -2,
+          reasonCode: "DECAY",
+        }),
+      });
     });
   });
 });

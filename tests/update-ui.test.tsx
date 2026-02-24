@@ -9,6 +9,10 @@ import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(() => ({ refresh: jest.fn() })),
+}));
+
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 

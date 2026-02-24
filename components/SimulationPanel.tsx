@@ -190,7 +190,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
       {replayResults.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Replay Timeline</h2>
-          <div className="space-y-3" data-testid="replay-timeline">
+          <div className="space-y-3 max-h-[360px] overflow-y-auto" data-testid="replay-timeline">
             {replayResults.map((r, i) => (
               <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-md">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--kinetic-gold)] text-white text-xs font-bold flex items-center justify-center">
@@ -241,7 +241,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
         {events.length === 0 ? (
           <p className="text-sm text-gray-500">No events recorded yet.</p>
         ) : (
-          <div className="space-y-2" data-testid="event-log">
+          <div className="space-y-2 max-h-[288px] overflow-y-auto" data-testid="event-log">
             {events.map((event) => (
               <div key={event.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded text-sm">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${

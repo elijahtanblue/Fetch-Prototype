@@ -10,13 +10,15 @@ import type { PrismaClient } from "@/lib/generated/prisma/client";
 import {
   evaluateAccess,
   applyDecay,
-  addPoints,
   POINTS_PER_UPDATE,
   POINTS_PER_QUICK_HANDOFF,
+  ANTI_SPAM_CAP,
+  ANTI_SPAM_WINDOW_DAYS,
   type AccessDecision,
 } from "@/domain/policy/access";
 import { getSharedUpdatesForPatient } from "@/domain/services/snapshot";
 import { generateSummary } from "@/domain/services/summarizer";
+import { awardPoints, REASON_CODES } from "@/domain/services/points";
 
 // --- Types ---
 
@@ -180,7 +182,7 @@ export async function simulateUpdate(
     },
   });
 
-  // Apply decay then add points (type-appropriate)
+  // Apply decay first
   const pointsForType = effectiveType === "STRUCTURED" ? POINTS_PER_UPDATE : POINTS_PER_QUICK_HANDOFF;
   const clinic = await ctx.prisma.clinic.findUnique({
     where: { id: input.clinicId },
@@ -192,13 +194,60 @@ export async function simulateUpdate(
     clinic?.lastDecayAt ?? null,
     now
   );
-  const newPercent = addPoints(decayed.accessPercent, pointsForType);
 
+  // Persist decay
+  if (decayed.accessPercent !== (clinic?.accessPercent ?? 0)) {
+    await ctx.prisma.clinic.update({
+      where: { id: input.clinicId },
+      data: {
+        accessPercent: decayed.accessPercent,
+        lastDecayAt: decayed.lastDecayAt,
+      },
+    });
+  }
+
+  // Anti-spam: count point-earning updates for this patient's episodes in last 7 days
+  const episode = await ctx.prisma.episode.findUnique({
+    where: { id: input.episodeId },
+    select: { patientId: true },
+  });
+  const spamWindowStart = new Date(
+    now.getTime() - ANTI_SPAM_WINDOW_DAYS * 24 * 60 * 60 * 1000
+  );
+  const recentUpdatesForPatient = await ctx.prisma.clinicalUpdate.count({
+    where: {
+      clinicId: input.clinicId,
+      episode: { patientId: episode?.patientId },
+      createdAt: { gte: spamWindowStart },
+      id: { not: update.id },
+    },
+  });
+
+  const earnedPoints = recentUpdatesForPatient < ANTI_SPAM_CAP;
+  const pointsDelta = earnedPoints ? pointsForType : 0;
+
+  // Award points via ledger if earned
+  let newPercent = decayed.accessPercent;
+  if (earnedPoints) {
+    const reasonCode = effectiveType === "STRUCTURED"
+      ? REASON_CODES.STRUCTURED_UPDATE
+      : REASON_CODES.QUICK_HANDOFF;
+    const result = await awardPoints(ctx.prisma, {
+      clinicId: input.clinicId,
+      delta: pointsForType,
+      reasonCode,
+      patientId: episode?.patientId,
+      episodeId: input.episodeId,
+      updateId: update.id,
+    });
+    newPercent = result.newAccessPercent;
+  }
+
+  // Update timestamps
   await ctx.prisma.clinic.update({
     where: { id: input.clinicId },
     data: {
       lastContributionAt: now,
-      accessPercent: newPercent,
       lastDecayAt: now,
     },
   });
@@ -212,7 +261,7 @@ export async function simulateUpdate(
         updateId: update.id,
         episodeId: input.episodeId,
         updateType: effectiveType,
-        pointsEarned: pointsForType,
+        pointsEarned: pointsDelta,
         newAccessPercent: newPercent,
       }),
     },
@@ -246,8 +295,32 @@ export async function evaluateAccessForClinic(
     return { allowed: false, reasonCode: "OPTED_OUT", explanation: "Clinic not found" };
   }
 
-  // Apply decay
+  // Apply decay and persist if changed
   const decayed = applyDecay(clinic.accessPercent, clinic.lastDecayAt, now);
+
+  if (
+    decayed.accessPercent !== clinic.accessPercent ||
+    decayed.lastDecayAt !== clinic.lastDecayAt
+  ) {
+    await ctx.prisma.clinic.update({
+      where: { id: input.clinicId },
+      data: {
+        accessPercent: decayed.accessPercent,
+        lastDecayAt: decayed.lastDecayAt,
+      },
+    });
+
+    const decayDelta = decayed.accessPercent - clinic.accessPercent;
+    if (decayDelta !== 0) {
+      await ctx.prisma.accessEvent.create({
+        data: {
+          clinicId: input.clinicId,
+          delta: decayDelta,
+          reasonCode: "DECAY",
+        },
+      });
+    }
+  }
 
   const { updates: sharedUpdates } = await getSharedUpdatesForPatient(
     ctx.prisma,

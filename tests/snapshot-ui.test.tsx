@@ -161,6 +161,40 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
   });
 
+  test("shows locked indicator when clinicTier is inactive", () => {
+    render(
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" clinicTier="inactive" />
+    );
+    expect(screen.getByTestId("snapshot-locked-inactive")).toBeInTheDocument();
+    expect(screen.getByText("View Shared History (Locked)")).toBeInTheDocument();
+    // Button should not exist — just a span
+    expect(screen.queryByRole("button", { name: /View Shared History/ })).not.toBeInTheDocument();
+  });
+
+  test("shows clickable button when clinicTier is full", () => {
+    render(
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" clinicTier="full" />
+    );
+    expect(screen.queryByTestId("snapshot-locked-inactive")).not.toBeInTheDocument();
+    expect(screen.getByText("View Shared History")).toBeInTheDocument();
+  });
+
+  test("shows clickable button when clinicTier is minimal", () => {
+    render(
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" clinicTier="minimal" />
+    );
+    expect(screen.queryByTestId("snapshot-locked-inactive")).not.toBeInTheDocument();
+    expect(screen.getByText("View Shared History")).toBeInTheDocument();
+  });
+
+  test("shows clickable button when clinicTier is not provided", () => {
+    render(
+      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+    );
+    expect(screen.queryByTestId("snapshot-locked-inactive")).not.toBeInTheDocument();
+    expect(screen.getByText("View Shared History")).toBeInTheDocument();
+  });
+
   test("toggles between show and hide", async () => {
     mockFetch.mockResolvedValue({
       ok: true,

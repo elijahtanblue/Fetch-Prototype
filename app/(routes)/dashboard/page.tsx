@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { determineTier } from "@/domain/policy/access";
+import { determineTier, getTierCapabilities } from "@/domain/policy/access";
 import ClinicOptInToggle from "@/components/ClinicOptInToggle";
 import ConsentToggle from "@/components/ConsentToggle";
 import EpisodesSection from "@/components/EpisodesSection";
@@ -119,6 +119,10 @@ export default async function DashboardPage() {
         <EpisodesSection
           initialEpisodes={serializedEpisodes}
           patients={patients}
+          clinicTier={(() => {
+            const myClinic = clinics.find((c) => c.id === clinicId);
+            return myClinic ? determineTier(myClinic.accessPercent) : "inactive";
+          })()}
         />
       </div>
 

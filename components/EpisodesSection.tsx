@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import CreateEpisodeForm from "./CreateEpisodeForm";
 import AddUpdateForm from "./AddUpdateForm";
 import PatientSnapshot from "./PatientSnapshot";
@@ -40,12 +41,15 @@ interface Episode {
 interface EpisodesSectionProps {
   initialEpisodes: Episode[];
   patients: Patient[];
+  clinicTier?: string;
 }
 
 export default function EpisodesSection({
   initialEpisodes,
   patients,
+  clinicTier,
 }: EpisodesSectionProps) {
+  const router = useRouter();
   const [episodes, setEpisodes] = useState<Episode[]>(initialEpisodes);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -62,6 +66,8 @@ export default function EpisodesSection({
       const data = await res.json();
       setEpisodes(data);
     }
+    // Refresh server component data (access progress bar, clinics table)
+    router.refresh();
   }
 
   async function handleDeleteEpisode(episodeId: string) {
@@ -267,6 +273,7 @@ export default function EpisodesSection({
               <PatientSnapshot
                 patientId={episode.patientId}
                 patientName={`${episode.patient.firstName} ${episode.patient.lastName}`}
+                clinicTier={clinicTier}
               />
             </div>
           ))}

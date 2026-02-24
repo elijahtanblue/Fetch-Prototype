@@ -182,6 +182,53 @@ export function filterSnapshotByTier(
   return snapshot.map((s) => ({ ...s }));
 }
 
+// --- Tier Capabilities ---
+
+export interface TierCapabilities {
+  canViewSnapshot: boolean;
+  canViewDiagnosis: boolean;
+  canViewNotes: boolean;
+  canViewFullHistory: boolean;
+  snapshotLimited: boolean;
+}
+
+export function getTierCapabilities(tier: AccessTier): TierCapabilities {
+  switch (tier) {
+    case "full":
+      return {
+        canViewSnapshot: true,
+        canViewDiagnosis: true,
+        canViewNotes: true,
+        canViewFullHistory: true,
+        snapshotLimited: false,
+      };
+    case "limited":
+      return {
+        canViewSnapshot: true,
+        canViewDiagnosis: true,
+        canViewNotes: true,
+        canViewFullHistory: false,
+        snapshotLimited: true,
+      };
+    case "minimal":
+      return {
+        canViewSnapshot: true,
+        canViewDiagnosis: false,
+        canViewNotes: false,
+        canViewFullHistory: false,
+        snapshotLimited: true,
+      };
+    case "inactive":
+      return {
+        canViewSnapshot: false,
+        canViewDiagnosis: false,
+        canViewNotes: false,
+        canViewFullHistory: false,
+        snapshotLimited: true,
+      };
+  }
+}
+
 export function evaluateAccess(input: AccessInput): AccessDecision {
   if (!input.optedIn) {
     return {

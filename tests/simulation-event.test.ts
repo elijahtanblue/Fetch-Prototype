@@ -18,6 +18,7 @@ jest.mock("@/lib/generated/prisma/client", () => ({
         id: "c2",
         name: "Harbour Health",
         optedIn: false,
+        accessPercent: 0,
       })),
       update: jest.fn(async () => ({
         id: "c2",
@@ -27,6 +28,9 @@ jest.mock("@/lib/generated/prisma/client", () => ({
     },
     simulationEvent: {
       create: mockEventCreate,
+    },
+    accessEvent: {
+      create: jest.fn(async () => ({})),
     },
   })),
 }));

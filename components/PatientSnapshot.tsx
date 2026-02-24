@@ -35,6 +35,7 @@ interface SnapshotResponse {
 interface PatientSnapshotProps {
   patientId: string;
   patientName: string;
+  clinicTier?: string;
 }
 
 const TIER_BADGE: Record<string, { bg: string; text: string; label: string }> = {
@@ -46,6 +47,7 @@ const TIER_BADGE: Record<string, { bg: string; text: string; label: string }> = 
 export default function PatientSnapshot({
   patientId,
   patientName,
+  clinicTier,
 }: PatientSnapshotProps) {
   const [data, setData] = useState<SnapshotResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,14 +73,26 @@ export default function PatientSnapshot({
     setOpen(!open);
   }
 
+  const isInactive = clinicTier === "inactive";
+
   return (
     <div className="mt-2">
-      <button
-        onClick={handleToggle}
-        className="text-xs text-[var(--kinetic-gold)] hover:underline font-medium"
-      >
-        {open ? "Hide Shared History" : "View Shared History"}
-      </button>
+      {isInactive ? (
+        <span
+          className="text-xs text-gray-400 font-medium cursor-not-allowed"
+          title="Contribute clinical updates to unlock shared history"
+          data-testid="snapshot-locked-inactive"
+        >
+          View Shared History (Locked)
+        </span>
+      ) : (
+        <button
+          onClick={handleToggle}
+          className="text-xs text-[var(--kinetic-gold)] hover:underline font-medium"
+        >
+          {open ? "Hide Shared History" : "View Shared History"}
+        </button>
+      )}
 
       {open && (
         <div className="mt-2">

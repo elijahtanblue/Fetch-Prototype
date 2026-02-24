@@ -27,7 +27,7 @@ function createStatefulMockPrisma() {
     { id: "cB", name: "Clinic B", optedIn: false, accessPercent: 0, lastDecayAt: null, lastContributionAt: null },
   ];
   const episodes: Array<{ id: string; patientId: string; clinicId: string }> = [];
-  const updates: Array<{ id: string; episodeId: string; clinicId: string }> = [];
+  const updates: Array<{ id: string; episodeId: string; clinicId: string; createdAt: Date }> = [];
   let idCounter = 0;
 
   return {
@@ -57,13 +57,28 @@ function createStatefulMockPrisma() {
         episodes.push(ep as { id: string; patientId: string; clinicId: string });
         return ep;
       }),
+      findUnique: jest.fn(async ({ where }: { where: { id: string } }) => {
+        return episodes.find((e) => e.id === where.id) ?? null;
+      }),
     },
     clinicalUpdate: {
       create: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
         idCounter++;
         const cu = { id: `cu-${idCounter}`, createdAt: new Date(), ...data };
-        updates.push(cu as { id: string; episodeId: string; clinicId: string });
+        updates.push(cu as unknown as { id: string; episodeId: string; clinicId: string; createdAt: Date });
         return cu;
+      }),
+      count: jest.fn(async ({ where }: { where: { clinicId: string; episode: { patientId: string }; createdAt: { gte: Date }; id: { not: string } } }) => {
+        return updates.filter((u) => {
+          const ep = episodes.find((e) => e.id === u.episodeId);
+          return (
+            ep &&
+            ep.patientId === where.episode.patientId &&
+            u.clinicId === where.clinicId &&
+            u.createdAt >= where.createdAt.gte &&
+            u.id !== where.id.not
+          );
+        }).length;
       }),
       findMany: jest.fn(async ({ where }: { where: { episode: { patientId: string }; clinicId: { not: string } } }) => {
         const patientId = where.episode.patientId;
@@ -83,6 +98,9 @@ function createStatefulMockPrisma() {
       findUnique: jest.fn(async () => ({ consentStatus: "SHARE" })),
     },
     simulationEvent: {
+      create: jest.fn(async () => ({})),
+    },
+    accessEvent: {
       create: jest.fn(async () => ({})),
     },
   };

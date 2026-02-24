@@ -14,6 +14,7 @@ import { render, screen } from "@testing-library/react";
 // --- Navbar ---
 jest.mock("next/navigation", () => ({
   usePathname: jest.fn(() => "/dashboard"),
+  useRouter: jest.fn(() => ({ refresh: jest.fn() })),
 }));
 
 jest.mock("next-auth/react", () => ({

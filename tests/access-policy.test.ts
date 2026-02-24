@@ -11,6 +11,7 @@ import {
   applyDecay,
   addPoints,
   filterSnapshotByTier,
+  getTierCapabilities,
   type AccessInput,
   type SnapshotEntry,
   POINTS_PER_UPDATE,
@@ -320,6 +321,63 @@ describe("filterSnapshotByTier", () => {
     const limited = filterSnapshotByTier([legacy], "limited");
     expect(limited[0].painRegion).toBe("Lower back");
     expect(limited[0].notesSummary).toBeNull();
+  });
+});
+
+describe("getTierCapabilities", () => {
+  test("full tier has all capabilities enabled", () => {
+    const caps = getTierCapabilities("full");
+    expect(caps.canViewSnapshot).toBe(true);
+    expect(caps.canViewDiagnosis).toBe(true);
+    expect(caps.canViewNotes).toBe(true);
+    expect(caps.canViewFullHistory).toBe(true);
+    expect(caps.snapshotLimited).toBe(false);
+  });
+
+  test("limited tier can view snapshot but not full history", () => {
+    const caps = getTierCapabilities("limited");
+    expect(caps.canViewSnapshot).toBe(true);
+    expect(caps.canViewDiagnosis).toBe(true);
+    expect(caps.canViewNotes).toBe(true);
+    expect(caps.canViewFullHistory).toBe(false);
+    expect(caps.snapshotLimited).toBe(true);
+  });
+
+  test("minimal tier can view snapshot but not diagnosis or notes", () => {
+    const caps = getTierCapabilities("minimal");
+    expect(caps.canViewSnapshot).toBe(true);
+    expect(caps.canViewDiagnosis).toBe(false);
+    expect(caps.canViewNotes).toBe(false);
+    expect(caps.canViewFullHistory).toBe(false);
+    expect(caps.snapshotLimited).toBe(true);
+  });
+
+  test("inactive tier cannot view anything", () => {
+    const caps = getTierCapabilities("inactive");
+    expect(caps.canViewSnapshot).toBe(false);
+    expect(caps.canViewDiagnosis).toBe(false);
+    expect(caps.canViewNotes).toBe(false);
+    expect(caps.canViewFullHistory).toBe(false);
+    expect(caps.snapshotLimited).toBe(true);
+  });
+
+  test("capabilities are consistent with filterSnapshotByTier", () => {
+    const snapshots: SnapshotEntry[] = [makeSnapshot()];
+
+    // Inactive returns empty array = canViewSnapshot false
+    expect(filterSnapshotByTier(snapshots, "inactive")).toHaveLength(0);
+    expect(getTierCapabilities("inactive").canViewSnapshot).toBe(false);
+
+    // Minimal returns locked entry without diagnosis
+    const minimal = filterSnapshotByTier(snapshots, "minimal");
+    expect(minimal[0].diagnosis).toBeUndefined();
+    expect(getTierCapabilities("minimal").canViewDiagnosis).toBe(false);
+
+    // Full returns all entries
+    const full = filterSnapshotByTier(snapshots, "full");
+    expect(full).toHaveLength(1);
+    expect(full[0].diagnosis).toBeDefined();
+    expect(getTierCapabilities("full").canViewDiagnosis).toBe(true);
   });
 });
 

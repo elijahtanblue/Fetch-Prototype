@@ -12,8 +12,11 @@ const mockClinicFindUnique = jest.fn();
 const mockClinicUpdate = jest.fn();
 const mockUserFindFirst = jest.fn();
 const mockEpisodeCreate = jest.fn();
+const mockEpisodeFindUnique = jest.fn();
 const mockClinicalUpdateCreate = jest.fn();
 const mockClinicalUpdateFindMany = jest.fn();
+const mockClinicalUpdateCount = jest.fn();
+const mockAccessEventCreate = jest.fn();
 const mockSimulationEventCreate = jest.fn();
 const mockSimulationEventFindMany = jest.fn();
 
@@ -27,10 +30,11 @@ jest.mock("@/lib/generated/prisma/client", () => ({
   PrismaClient: jest.fn(() => ({
     clinic: { findUnique: mockClinicFindUnique, update: mockClinicUpdate },
     user: { findFirst: mockUserFindFirst },
-    episode: { create: mockEpisodeCreate },
-    clinicalUpdate: { create: mockClinicalUpdateCreate, findMany: mockClinicalUpdateFindMany },
+    episode: { create: mockEpisodeCreate, findUnique: mockEpisodeFindUnique },
+    clinicalUpdate: { create: mockClinicalUpdateCreate, findMany: mockClinicalUpdateFindMany, count: mockClinicalUpdateCount },
     patient: { findUnique: mockPatientFindUnique },
     simulationEvent: { create: mockSimulationEventCreate, findMany: mockSimulationEventFindMany },
+    accessEvent: { create: mockAccessEventCreate },
   })),
 }));
 
@@ -58,9 +62,15 @@ describe("Simulation API Endpoints", () => {
     mockSimulationEventCreate.mockReset();
     mockSimulationEventFindMany.mockReset();
     mockPatientFindUnique.mockReset();
+    mockEpisodeFindUnique.mockReset();
+    mockClinicalUpdateCount.mockReset();
+    mockAccessEventCreate.mockReset();
     mockUserFindFirst.mockResolvedValue({ id: "u1" });
     mockSimulationEventCreate.mockResolvedValue({});
     mockPatientFindUnique.mockResolvedValue({ consentStatus: "SHARE" });
+    mockEpisodeFindUnique.mockResolvedValue({ patientId: "p1" });
+    mockClinicalUpdateCount.mockResolvedValue(0);
+    mockAccessEventCreate.mockResolvedValue({});
   });
 
   describe("POST /api/simulation/toggle", () => {
@@ -143,6 +153,7 @@ describe("Simulation API Endpoints", () => {
 
     test("returns success on valid update", async () => {
       mockClinicalUpdateCreate.mockResolvedValue({ id: "cu1" });
+      mockClinicFindUnique.mockResolvedValue({ accessPercent: 50, lastDecayAt: new Date() });
       mockClinicUpdate.mockResolvedValue({});
 
       const { POST } = await import("@/app/api/simulation/update/route");

@@ -191,6 +191,149 @@ describe("SimulationPanel — Check Access Console", () => {
   });
 });
 
+// ---- Scroll containers ----
+describe("SimulationPanel — Scroll Containers", () => {
+  beforeEach(() => {
+    (global.fetch as jest.Mock) = jest.fn();
+  });
+
+  test("event log container has scroll classes", async () => {
+    const manyEvents = Array.from({ length: 10 }, (_, i) => ({
+      id: `ev${i}`,
+      type: "CLINICAL_UPDATE",
+      clinicId: "c1",
+      userId: "u1",
+      metadata: "{}",
+      createdAt: `2026-02-24T${String(i + 8).padStart(2, "0")}:00:00.000Z`,
+      clinic: { name: "City Physio" },
+      user: { name: "Ed Sun" },
+    }));
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => manyEvents,
+    });
+
+    render(<SimulationPanel clinics={mockClinics} patients={mockPatients} />);
+    fireEvent.click(screen.getByTestId("refresh-events-btn"));
+
+    await waitFor(() => {
+      const log = screen.getByTestId("event-log");
+      expect(log.className).toContain("overflow-y-auto");
+      expect(log.className).toContain("max-h-");
+    });
+  });
+
+  test("all 10 event log items render (reachable via scroll)", async () => {
+    const manyEvents = Array.from({ length: 10 }, (_, i) => ({
+      id: `ev${i}`,
+      type: i % 2 === 0 ? "TOGGLE_OPT_IN" : "CLINICAL_UPDATE",
+      clinicId: "c1",
+      userId: "u1",
+      metadata: "{}",
+      createdAt: `2026-02-24T${String(i + 8).padStart(2, "0")}:00:00.000Z`,
+      clinic: { name: "City Physio" },
+      user: { name: "Ed Sun" },
+    }));
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => manyEvents,
+    });
+
+    render(<SimulationPanel clinics={mockClinics} patients={mockPatients} />);
+    fireEvent.click(screen.getByTestId("refresh-events-btn"));
+
+    await waitFor(() => {
+      for (let i = 0; i < 10; i++) {
+        expect(screen.getByTestId(`event-timestamp-ev${i}`)).toBeInTheDocument();
+      }
+    });
+  });
+
+  test("event log timestamps and badges render with >6 items", async () => {
+    const manyEvents = Array.from({ length: 8 }, (_, i) => ({
+      id: `ev${i}`,
+      type: "TOGGLE_OPT_IN",
+      clinicId: "c1",
+      userId: "u1",
+      metadata: "{}",
+      createdAt: `2026-02-24T${String(i + 8).padStart(2, "0")}:30:00.000Z`,
+      clinic: { name: "City Physio" },
+      user: { name: "Ed Sun" },
+    }));
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => manyEvents,
+    });
+
+    render(<SimulationPanel clinics={mockClinics} patients={mockPatients} />);
+    fireEvent.click(screen.getByTestId("refresh-events-btn"));
+
+    await waitFor(() => {
+      // All timestamps still render
+      const ts = screen.getByTestId("event-timestamp-ev7");
+      expect(ts.textContent).toMatch(/^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}$/);
+      // All type badges render
+      const badges = screen.getAllByText("TOGGLE_OPT_IN");
+      expect(badges.length).toBe(8);
+    });
+  });
+
+  test("replay timeline container has scroll classes", async () => {
+    const manyReplays = Array.from({ length: 10 }, (_, i) => ({
+      action: "CLINICAL_UPDATE",
+      success: true,
+      data: { clinicId: "c1" },
+      accessDecision: { allowed: true },
+      timestamp: `2026-02-24T${String(i + 8).padStart(2, "0")}:00:00.000Z`,
+    }));
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => manyReplays,
+    });
+
+    render(<SimulationPanel clinics={mockClinics} patients={mockPatients} />);
+    fireEvent.click(screen.getByTestId("replay-btn"));
+
+    await waitFor(() => {
+      const timeline = screen.getByTestId("replay-timeline");
+      expect(timeline.className).toContain("overflow-y-auto");
+      expect(timeline.className).toContain("max-h-");
+    });
+  });
+
+  test("all 10 replay items render with timestamps and badges", async () => {
+    const manyReplays = Array.from({ length: 10 }, (_, i) => ({
+      action: i % 2 === 0 ? "TOGGLE_OPT_IN" : "VISIT",
+      success: true,
+      data: { clinicId: "c1" },
+      accessDecision: { allowed: i < 5, reasonCode: i >= 5 ? "OPTED_OUT" : undefined },
+      timestamp: `2026-02-24T${String(i + 8).padStart(2, "0")}:15:00.000Z`,
+    }));
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => manyReplays,
+    });
+
+    render(<SimulationPanel clinics={mockClinics} patients={mockPatients} />);
+    fireEvent.click(screen.getByTestId("replay-btn"));
+
+    await waitFor(() => {
+      // All 10 timestamps render
+      for (let i = 0; i < 10; i++) {
+        expect(screen.getByTestId(`replay-timestamp-${i}`)).toBeInTheDocument();
+      }
+      // Status badges render
+      expect(screen.getAllByText("Access: Allowed").length).toBe(5);
+      expect(screen.getAllByText(/Access: Denied/).length).toBe(5);
+    });
+  });
+});
+
 // ---- formatTimestamp unit tests ----
 describe("formatTimestamp", () => {
   test("formats Date to DD/MM/YYYY, HH:MM", () => {
