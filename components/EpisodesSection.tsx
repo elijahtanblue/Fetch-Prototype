@@ -49,6 +49,7 @@ export default function EpisodesSection({
   const [episodes, setEpisodes] = useState<Episode[]>(initialEpisodes);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteEpisodeConfirmId, setDeleteEpisodeConfirmId] = useState<string | null>(null);
 
   function handleEpisodeCreated(episode: { id: string; reason: string; startDate: string }) {
     refreshEpisodes();
@@ -60,6 +61,14 @@ export default function EpisodesSection({
     if (res.ok) {
       const data = await res.json();
       setEpisodes(data);
+    }
+  }
+
+  async function handleDeleteEpisode(episodeId: string) {
+    const res = await fetch(`/api/episodes/${episodeId}`, { method: "DELETE" });
+    if (res.ok) {
+      setDeleteEpisodeConfirmId(null);
+      setEpisodes((prev) => prev.filter((ep) => ep.id !== episodeId));
     }
   }
 
@@ -105,9 +114,37 @@ export default function EpisodesSection({
                     Started: {new Date(episode.startDate).toLocaleDateString()}
                   </p>
                 </div>
-                <span className="text-xs text-[var(--kinetic-gray)]">
-                  {episode.clinicalUpdates.length} update{episode.clinicalUpdates.length !== 1 ? "s" : ""}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-[var(--kinetic-gray)]">
+                    {episode.clinicalUpdates.length} update{episode.clinicalUpdates.length !== 1 ? "s" : ""}
+                  </span>
+                  {deleteEpisodeConfirmId === episode.id ? (
+                    <span className="flex items-center gap-1">
+                      <span className="text-xs text-red-600">Remove visit?</span>
+                      <button
+                        onClick={() => handleDeleteEpisode(episode.id)}
+                        data-testid={`confirm-delete-episode-${episode.id}`}
+                        className="text-xs text-red-600 font-medium hover:text-red-800"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => setDeleteEpisodeConfirmId(null)}
+                        className="text-xs text-[var(--kinetic-gray)]"
+                      >
+                        No
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteEpisodeConfirmId(episode.id)}
+                      data-testid={`delete-episode-${episode.id}`}
+                      className="text-xs text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
               </div>
 
               {episode.clinicalUpdates.length > 0 && (
