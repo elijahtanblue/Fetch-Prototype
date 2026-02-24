@@ -23,16 +23,16 @@ describe("CreateEpisodeForm", () => {
     mockFetch.mockReset();
   });
 
-  test("renders the Create Episode button initially", () => {
+  test("renders the Add Patient Visit button initially", () => {
     const onCreated = jest.fn();
     render(<CreateEpisodeForm patients={patients} onCreated={onCreated} />);
-    expect(screen.getByText("+ Create Episode")).toBeInTheDocument();
+    expect(screen.getByText("+ Add Patient Visit")).toBeInTheDocument();
   });
 
   test("shows form fields when button is clicked", () => {
     const onCreated = jest.fn();
     render(<CreateEpisodeForm patients={patients} onCreated={onCreated} />);
-    fireEvent.click(screen.getByText("+ Create Episode"));
+    fireEvent.click(screen.getByText("+ Add Patient Visit"));
 
     expect(screen.getByLabelText("Patient")).toBeInTheDocument();
     expect(screen.getByLabelText("Reason for Visit")).toBeInTheDocument();
@@ -47,14 +47,14 @@ describe("CreateEpisodeForm", () => {
 
     const onCreated = jest.fn();
     render(<CreateEpisodeForm patients={patients} onCreated={onCreated} />);
-    fireEvent.click(screen.getByText("+ Create Episode"));
+    fireEvent.click(screen.getByText("+ Add Patient Visit"));
 
     fireEvent.change(screen.getByLabelText("Patient"), { target: { value: "p1" } });
     fireEvent.change(screen.getByLabelText("Reason for Visit"), {
       target: { value: "Back pain" },
     });
 
-    fireEvent.click(screen.getByText("Create Episode"));
+    fireEvent.click(screen.getByText("Add Visit"));
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith("/api/episodes", expect.objectContaining({
@@ -71,14 +71,14 @@ describe("CreateEpisodeForm", () => {
 
     const onCreated = jest.fn();
     render(<CreateEpisodeForm patients={patients} onCreated={onCreated} />);
-    fireEvent.click(screen.getByText("+ Create Episode"));
+    fireEvent.click(screen.getByText("+ Add Patient Visit"));
 
     fireEvent.change(screen.getByLabelText("Patient"), { target: { value: "p1" } });
     fireEvent.change(screen.getByLabelText("Reason for Visit"), {
       target: { value: "Back pain" },
     });
 
-    fireEvent.click(screen.getByText("Create Episode"));
+    fireEvent.click(screen.getByText("Add Visit"));
 
     await waitFor(() => {
       expect(screen.getByText("Patient not found")).toBeInTheDocument();

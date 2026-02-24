@@ -68,6 +68,7 @@ async function main() {
       firstName: "John",
       lastName: "Smith",
       dateOfBirth: new Date("1985-03-15"),
+      phoneNumber: "0400000001",
       clinicId: clinicA.id,
     },
   });
@@ -77,6 +78,7 @@ async function main() {
       firstName: "Winston",
       lastName: "Liang",
       dateOfBirth: new Date("2001-08-31"),
+      phoneNumber: "0400000002",
       clinicId: clinicA.id,
     },
   });

@@ -5,7 +5,7 @@ import SimulationPanel from "@/components/SimulationPanel";
 
 export const dynamic = "force-dynamic";
 
-export default async function SimulationPage() {
+export default async function CheckAccessPage() {
   const session = await auth();
 
   if (!session?.user) {
@@ -32,10 +32,10 @@ export default async function SimulationPage() {
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[var(--kinetic-dark)]">
-          Simulation Console
+          Check Access Console
         </h1>
         <p className="text-sm text-[var(--kinetic-gray)] mt-1">
-          Simulate patient transfer scenarios across clinics. Toggle opt-in, create visits, add clinical updates, and check access decisions.
+          Check access decisions across clinics, review event history, and replay access audit timelines.
         </p>
       </div>
 

@@ -18,6 +18,7 @@ export default function AddUpdateForm({
   // Shared fields
   const [painRegion, setPainRegion] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
+  const [dateOfVisit, setDateOfVisit] = useState("");
 
   // Structured-only fields
   const [treatmentModalities, setTreatmentModalities] = useState("");
@@ -35,6 +36,7 @@ export default function AddUpdateForm({
   function resetForm() {
     setPainRegion("");
     setDiagnosis("");
+    setDateOfVisit("");
     setTreatmentModalities("");
     setRedFlags(false);
     setPrecautions("");
@@ -55,6 +57,7 @@ export default function AddUpdateForm({
       updateType: isStructured ? "STRUCTURED" : "QUICK_HANDOFF",
       painRegion,
       diagnosis,
+      ...(dateOfVisit ? { dateOfVisit } : {}),
     };
 
     if (isStructured) {
@@ -181,6 +184,19 @@ export default function AddUpdateForm({
             onChange={(e) => setDiagnosis(e.target.value)}
             required
             placeholder="e.g. Lumbar disc herniation"
+            className={inputClass}
+          />
+        </div>
+
+        <div>
+          <label htmlFor={`dateOfVisit-${episodeId}`} className={labelClass}>
+            Date of Visit (optional)
+          </label>
+          <input
+            id={`dateOfVisit-${episodeId}`}
+            type="date"
+            value={dateOfVisit}
+            onChange={(e) => setDateOfVisit(e.target.value)}
             className={inputClass}
           />
         </div>

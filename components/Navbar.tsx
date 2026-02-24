@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/simulation", label: "Simulation" },
+  { href: "/check-access", label: "Check Access" },
 ];
 
 export default function Navbar() {

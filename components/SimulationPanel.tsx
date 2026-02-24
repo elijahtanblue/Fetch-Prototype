@@ -36,6 +36,7 @@ interface ReplayResult {
   success: boolean;
   data: Record<string, unknown>;
   accessDecision?: AccessDecision;
+  timestamp?: string;
 }
 
 interface Props {
@@ -43,9 +44,20 @@ interface Props {
   patients: Patient[];
 }
 
+/**
+ * Formats a date string or Date to DD/MM/YYYY, HH:MM.
+ */
+export function formatTimestamp(dateStr: string | Date): string {
+  const d = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${day}/${month}/${year}, ${hours}:${minutes}`;
+}
+
 export default function SimulationPanel({ clinics, patients }: Props) {
-  const [selectedClinicId, setSelectedClinicId] = useState(clinics[0]?.id ?? "");
-  const [selectedPatientId, setSelectedPatientId] = useState(patients[0]?.id ?? "");
   const [accessClinicId, setAccessClinicId] = useState(clinics[0]?.id ?? "");
   const [accessPatientId, setAccessPatientId] = useState(patients[0]?.id ?? "");
 
@@ -53,80 +65,12 @@ export default function SimulationPanel({ clinics, patients }: Props) {
   const [accessResult, setAccessResult] = useState<AccessDecision | null>(null);
   const [replayResults, setReplayResults] = useState<ReplayResult[]>([]);
   const [loading, setLoading] = useState("");
-  const [lastResult, setLastResult] = useState<string>("");
-
-  // Update form fields
-  const [painRegion, setPainRegion] = useState("Lower back, L4-L5");
-  const [diagnosis, setDiagnosis] = useState("Lumbar disc herniation");
-  const [treatmentModalities, setTreatmentModalities] = useState("Manual therapy, exercise prescription");
-  const [redFlags, setRedFlags] = useState(false);
-  const [notes, setNotes] = useState("");
-  const [visitReason, setVisitReason] = useState("Patient assessment");
-  const [lastEpisodeId, setLastEpisodeId] = useState<string>("");
 
   async function fetchEvents() {
     const res = await fetch("/api/simulation/events");
     if (res.ok) {
       setEvents(await res.json());
     }
-  }
-
-  async function handleToggle() {
-    setLoading("toggle");
-    const res = await fetch("/api/simulation/toggle", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clinicId: selectedClinicId }),
-    });
-    const data = await res.json();
-    setLastResult(`Toggle: ${data.data?.name} → ${data.data?.optedIn ? "Opted In" : "Not Opted In"}`);
-    await fetchEvents();
-    setLoading("");
-  }
-
-  async function handleVisit() {
-    setLoading("visit");
-    const res = await fetch("/api/simulation/visit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        clinicId: selectedClinicId,
-        patientId: selectedPatientId,
-        reason: visitReason,
-      }),
-    });
-    const data = await res.json();
-    if (data.data?.episodeId) {
-      setLastEpisodeId(data.data.episodeId);
-    }
-    setLastResult(`Visit created: Episode ${data.data?.episodeId?.slice(0, 8)}...`);
-    await fetchEvents();
-    setLoading("");
-  }
-
-  async function handleUpdate() {
-    if (!lastEpisodeId) {
-      setLastResult("Error: Create a visit first to get an episode ID");
-      return;
-    }
-    setLoading("update");
-    const res = await fetch("/api/simulation/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        clinicId: selectedClinicId,
-        episodeId: lastEpisodeId,
-        painRegion,
-        diagnosis,
-        treatmentModalities,
-        redFlags,
-        notes,
-      }),
-    });
-    const data = await res.json();
-    setLastResult(`Clinical update added: ${data.data?.painRegion}`);
-    await fetchEvents();
-    setLoading("");
   }
 
   async function handleCheckAccess() {
@@ -160,131 +104,10 @@ export default function SimulationPanel({ clinics, patients }: Props) {
   }
 
   const getClinicName = (id: string) => clinics.find((c) => c.id === id)?.name ?? id;
-  const getPatientName = (id: string) => {
-    const p = patients.find((p) => p.id === id);
-    return p ? `${p.firstName} ${p.lastName}` : id;
-  };
 
   return (
     <div className="space-y-6">
-      {/* Action Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Simulate Actions</h2>
-
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Acting Clinic</label>
-            <select
-              value={selectedClinicId}
-              onChange={(e) => setSelectedClinicId(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-              data-testid="clinic-selector"
-            >
-              {clinics.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Patient</label>
-            <select
-              value={selectedPatientId}
-              onChange={(e) => setSelectedPatientId(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-              data-testid="patient-selector"
-            >
-              {patients.map((p) => (
-                <option key={p.id} value={p.id}>{p.firstName} {p.lastName}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Visit reason */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Visit Reason</label>
-          <input
-            type="text"
-            value={visitReason}
-            onChange={(e) => setVisitReason(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-          />
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex gap-3 mb-4">
-          <button
-            onClick={handleToggle}
-            disabled={!!loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-[var(--kinetic-gold)] rounded-md hover:bg-[var(--kinetic-gold-hover)] disabled:opacity-50 transition-colors"
-            data-testid="toggle-btn"
-          >
-            {loading === "toggle" ? "Toggling..." : "Toggle Opt-In"}
-          </button>
-          <button
-            onClick={handleVisit}
-            disabled={!!loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            data-testid="visit-btn"
-          >
-            {loading === "visit" ? "Creating..." : "Simulate Visit"}
-          </button>
-        </div>
-
-        {/* Clinical update fields */}
-        <div className="border-t border-gray-200 pt-4 mt-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Clinical Update Fields</h3>
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Pain Region</label>
-              <input type="text" value={painRegion} onChange={(e) => setPainRegion(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Diagnosis</label>
-              <input type="text" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Treatment Modalities</label>
-              <input type="text" value={treatmentModalities} onChange={(e) => setTreatmentModalities(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm" />
-            </div>
-            <div className="flex items-end gap-3">
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={redFlags} onChange={(e) => setRedFlags(e.target.checked)}
-                  className="rounded border-gray-300" />
-                Red Flags
-              </label>
-            </div>
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-gray-600 mb-1">Notes</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm" rows={2} />
-          </div>
-          <button
-            onClick={handleUpdate}
-            disabled={!!loading || !lastEpisodeId}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
-            data-testid="update-btn"
-          >
-            {loading === "update" ? "Adding..." : "Add Clinical Update"}
-          </button>
-          {!lastEpisodeId && (
-            <p className="text-xs text-gray-500 mt-1">Create a visit first to enable clinical updates</p>
-          )}
-        </div>
-
-        {/* Last result */}
-        {lastResult && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-md text-sm text-gray-700" data-testid="last-result">
-            {lastResult}
-          </div>
-        )}
-      </div>
-
-      {/* Access Check Section */}
+      {/* Check Access Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Check Access Decision</h2>
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -363,7 +186,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
         )}
       </div>
 
-      {/* Replay Results */}
+      {/* Replay Timeline */}
       {replayResults.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Replay Timeline</h2>
@@ -380,6 +203,11 @@ export default function SimulationPanel({ clinics, patients }: Props) {
                       {getClinicName(r.data.clinicId as string)}
                     </span>
                   </div>
+                  {r.timestamp && (
+                    <span className="text-xs text-gray-400" data-testid={`replay-timestamp-${i}`}>
+                      {formatTimestamp(r.timestamp)}
+                    </span>
+                  )}
                   {r.accessDecision && (
                     <span className={`inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium ${
                       r.accessDecision.allowed
@@ -411,7 +239,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
           </button>
         </div>
         {events.length === 0 ? (
-          <p className="text-sm text-gray-500">No simulation events yet. Use the actions above to generate events.</p>
+          <p className="text-sm text-gray-500">No events recorded yet.</p>
         ) : (
           <div className="space-y-2" data-testid="event-log">
             {events.map((event) => (
@@ -426,8 +254,8 @@ export default function SimulationPanel({ clinics, patients }: Props) {
                   {event.type}
                 </span>
                 <span className="text-gray-700">{event.clinic.name}</span>
-                <span className="text-gray-400 text-xs ml-auto">
-                  {new Date(event.createdAt).toLocaleTimeString()}
+                <span className="text-gray-400 text-xs ml-auto" data-testid={`event-timestamp-${event.id}`}>
+                  {formatTimestamp(event.createdAt)}
                 </span>
               </div>
             ))}

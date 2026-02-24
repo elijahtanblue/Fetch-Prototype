@@ -66,14 +66,14 @@
 
 ## Milestone 3 — Episodes & Clinical Updates
 
-### Create Episode
+### Add Patient Visit
 - [ ] Log in as `edsun@diversus.com`
-- [ ] Dashboard shows an "Episodes" section with a "+ Create Episode" button
-- [ ] Click "+ Create Episode" — form expands with Patient, Reason, Start Date fields
+- [ ] Dashboard shows a "Patient Visits" section with a "+ Add Patient Visit" button
+- [ ] Click "+ Add Patient Visit" — form expands with Patient, Reason, Start Date fields
 - [ ] Patient dropdown shows "John Smith" and "Winston Liang"
-- [ ] Fill in reason "Lower back pain assessment" and click "Create Episode"
-- [ ] Episode appears in the list showing patient name, reason, and start date
-- [ ] Click "Cancel" — form collapses without creating an episode
+- [ ] Fill in reason "Lower back pain assessment" and click "Add Visit"
+- [ ] Visit appears in the list showing patient name, reason, and start date
+- [ ] Click "Cancel" — form collapses without creating a visit
 
 ### Add Clinical Update
 - [ ] On an existing episode, click "+ Add Update"
@@ -150,10 +150,10 @@
 
 ### Admin Access
 - [ ] Log in as `elijah@admin.com` (admin)
-- [ ] Navbar shows "Simulation" link
-- [ ] Click "Simulation" — navigates to `/simulation`
-- [ ] Page shows "Simulation Console" heading
-- [ ] Non-admin users (e.g. `edsun@diversus.com`) cannot access `/simulation` — redirected to `/dashboard`
+- [ ] Navbar shows "Check Access" link
+- [ ] Click "Check Access" — navigates to `/check-access`
+- [ ] Page shows "Check Access Console" heading
+- [ ] Non-admin users (e.g. `edsun@diversus.com`) cannot access `/check-access` — redirected to `/dashboard`
 
 ### Patient Transfer Demo (A → B Scenario)
 - [ ] Select "City Physio" from Acting Clinic dropdown

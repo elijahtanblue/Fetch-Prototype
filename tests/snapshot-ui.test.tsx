@@ -122,7 +122,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     await waitFor(() => {
       expect(screen.getByTestId("snapshot-panel")).toBeInTheDocument();
       expect(screen.getByText("Harbour Health")).toBeInTheDocument();
-      expect(screen.getByText("Red Flag")).toBeInTheDocument();
+      expect(screen.getByText(/Red Flag/)).toBeInTheDocument();
       expect(screen.getByText(/Disc herniation/)).toBeInTheDocument();
     });
   });

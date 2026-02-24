@@ -4,6 +4,8 @@ import { determineTier } from "@/domain/policy/access";
 import ClinicOptInToggle from "@/components/ClinicOptInToggle";
 import ConsentToggle from "@/components/ConsentToggle";
 import EpisodesSection from "@/components/EpisodesSection";
+import CreatePatientForm from "@/components/CreatePatientForm";
+import PatientManagement from "@/components/PatientManagement";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +37,15 @@ export default async function DashboardPage() {
   const [clinics, patients, episodes] = await Promise.all([
     getClinics(),
     prisma.patient.findMany({
-      select: { id: true, firstName: true, lastName: true, consentStatus: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        consentStatus: true,
+        treatmentCompletedAt: true,
+        _count: { select: { episodes: true } },
+      },
       orderBy: { lastName: "asc" },
     }),
     prisma.episode.findMany({
@@ -62,13 +72,16 @@ export default async function DashboardPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-[var(--kinetic-dark)]">
-          Shared Patient History
-        </h1>
-        <p className="text-sm text-[var(--kinetic-gray)] mt-1">
-          Access shared patient history by contributing updates.
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-[var(--kinetic-dark)]">
+            Shared Patient History
+          </h1>
+          <p className="text-sm text-[var(--kinetic-gray)] mt-1">
+            Access shared patient history by contributing updates.
+          </p>
+        </div>
+        <CreatePatientForm />
       </div>
 
       {/* Access Progress Bar */}
@@ -99,7 +112,7 @@ export default async function DashboardPage() {
         );
       })()}
 
-      {/* Episodes Section */}
+      {/* Patient Visits Section */}
       <div className="mb-6">
         <EpisodesSection
           initialEpisodes={serializedEpisodes}
@@ -182,6 +195,20 @@ export default async function DashboardPage() {
           </tbody>
         </table>
       </div>
+      {/* Patient Management (admin only) */}
+      {isAdmin && (
+        <PatientManagement
+          patients={patients.map((p) => ({
+            id: p.id,
+            firstName: p.firstName,
+            lastName: p.lastName,
+            phoneNumber: p.phoneNumber,
+            treatmentCompletedAt: p.treatmentCompletedAt?.toISOString() ?? null,
+            episodeCount: p._count.episodes,
+          }))}
+        />
+      )}
+
       {/* Patient Consent (admin only) */}
       {isAdmin && (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6">

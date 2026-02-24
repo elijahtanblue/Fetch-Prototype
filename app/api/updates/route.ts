@@ -72,6 +72,8 @@ export async function POST(request: Request) {
   const notesRawValue = body.notesRaw as string | undefined;
   const notesSummaryValue = notesRawValue ? generateSummary(notesRawValue) : undefined;
 
+  const dateOfVisitValue = body.dateOfVisit ? new Date(body.dateOfVisit as string) : null;
+
   const createData: Record<string, unknown> = {
     episodeId,
     clinicId,
@@ -84,6 +86,7 @@ export async function POST(request: Request) {
     notes: notesSummaryValue ?? "",
     notesRaw: notesRawValue || null,
     notesSummary: notesSummaryValue || null,
+    dateOfVisit: dateOfVisitValue,
   };
 
   if (updateType === "STRUCTURED") {

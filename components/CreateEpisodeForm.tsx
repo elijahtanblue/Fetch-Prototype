@@ -40,7 +40,7 @@ export default function CreateEpisodeForm({
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Failed to create episode");
+        setError(data.error || "Failed to add patient visit");
         return;
       }
 
@@ -61,7 +61,7 @@ export default function CreateEpisodeForm({
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:bg-[var(--kinetic-gold-hover)] transition-colors"
       >
-        + Create Episode
+        + Add Patient Visit
       </button>
     );
   }
@@ -69,7 +69,7 @@ export default function CreateEpisodeForm({
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <h3 className="text-sm font-semibold text-[var(--kinetic-dark)] mb-3">
-        Create New Episode
+        Add New Patient Visit
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
@@ -140,7 +140,7 @@ export default function CreateEpisodeForm({
             disabled={loading}
             className="px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:bg-[var(--kinetic-gold-hover)] transition-colors disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Episode"}
+            {loading ? "Adding..." : "Add Visit"}
           </button>
           <button
             type="button"

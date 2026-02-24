@@ -42,15 +42,17 @@ model User {
 }
 
 model Patient {
-  id               String    @id @default(cuid())
-  firstName        String
-  lastName         String
-  dateOfBirth      DateTime
-  clinicId         String
-  consentStatus    String    @default("SHARE")
-  consentUpdatedAt DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id                   String    @id @default(cuid())
+  firstName            String
+  lastName             String
+  dateOfBirth          DateTime
+  phoneNumber          String    @unique
+  clinicId             String
+  consentStatus        String    @default("SHARE")
+  consentUpdatedAt     DateTime?
+  treatmentCompletedAt DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   clinic   Clinic    @relation(fields: [clinicId], references: [id])
   episodes Episode[]
@@ -87,7 +89,9 @@ model ClinicalUpdate {
   suggestedNextSteps  String?
   notesRaw            String?
   notesSummary        String?
+  dateOfVisit         DateTime?
   createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now()) @updatedAt
 
   episode Episode @relation(fields: [episodeId], references: [id])
   clinic  Clinic  @relation(fields: [clinicId], references: [id])

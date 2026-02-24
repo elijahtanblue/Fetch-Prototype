@@ -38,7 +38,8 @@ export async function GET(
   const now = new Date();
   const decayed = applyDecay(clinic.accessPercent, clinic.lastDecayAt, now);
 
-  // Persist decay if it changed
+  // Persist decay if it changed, and log to ledger
+  const decayDelta = decayed.accessPercent - clinic.accessPercent;
   if (
     decayed.accessPercent !== clinic.accessPercent ||
     decayed.lastDecayAt !== clinic.lastDecayAt
@@ -50,6 +51,16 @@ export async function GET(
         lastDecayAt: decayed.lastDecayAt,
       },
     });
+
+    if (decayDelta !== 0) {
+      await prisma.accessEvent.create({
+        data: {
+          clinicId,
+          delta: decayDelta,
+          reasonCode: "DECAY",
+        },
+      });
+    }
   }
 
   // Fetch snapshot data (respects patient consent)

@@ -191,7 +191,7 @@ export default function PatientSnapshot({
                           )}
                           {entry.redFlags && (
                             <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-xs font-medium">
-                              Red Flag
+                              {"\u{1F6A9}"} Red Flag
                             </span>
                           )}
                         </div>
