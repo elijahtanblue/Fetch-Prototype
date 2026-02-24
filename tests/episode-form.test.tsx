@@ -97,10 +97,21 @@ describe("AddUpdateForm", () => {
     expect(screen.getByText("+ Add Update")).toBeInTheDocument();
   });
 
-  test("shows form fields when button is clicked", () => {
+  test("shows workflow chooser when button is clicked", () => {
     const onCreated = jest.fn();
     render(<AddUpdateForm episodeId="ep1" onCreated={onCreated} />);
     fireEvent.click(screen.getByText("+ Add Update"));
+
+    expect(screen.getByText("Choose Update Type")).toBeInTheDocument();
+    expect(screen.getByText("Structured Continuity")).toBeInTheDocument();
+    expect(screen.getByText("Quick Handoff")).toBeInTheDocument();
+  });
+
+  test("shows structured form fields after choosing Structured", () => {
+    const onCreated = jest.fn();
+    render(<AddUpdateForm episodeId="ep1" onCreated={onCreated} />);
+    fireEvent.click(screen.getByText("+ Add Update"));
+    fireEvent.click(screen.getByTestId("chooser-structured"));
 
     expect(screen.getByLabelText("Pain Region")).toBeInTheDocument();
     expect(screen.getByLabelText("Diagnosis")).toBeInTheDocument();
@@ -108,7 +119,7 @@ describe("AddUpdateForm", () => {
     expect(screen.getByLabelText("Red Flags Present")).toBeInTheDocument();
   });
 
-  test("submits form with valid data and calls onCreated", async () => {
+  test("submits structured form with valid data and calls onCreated", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ id: "cu1" }),
@@ -117,6 +128,7 @@ describe("AddUpdateForm", () => {
     const onCreated = jest.fn();
     render(<AddUpdateForm episodeId="ep1" onCreated={onCreated} />);
     fireEvent.click(screen.getByText("+ Add Update"));
+    fireEvent.click(screen.getByTestId("chooser-structured"));
 
     fireEvent.change(screen.getByLabelText("Pain Region"), {
       target: { value: "Lower back" },
@@ -147,6 +159,7 @@ describe("AddUpdateForm", () => {
     const onCreated = jest.fn();
     render(<AddUpdateForm episodeId="ep1" onCreated={onCreated} />);
     fireEvent.click(screen.getByText("+ Add Update"));
+    fireEvent.click(screen.getByTestId("chooser-structured"));
 
     fireEvent.change(screen.getByLabelText("Pain Region"), {
       target: { value: "Lower back" },

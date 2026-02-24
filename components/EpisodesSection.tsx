@@ -131,22 +131,27 @@ export default function EpisodesSection({
                           Treatment: {update.treatmentModalities}
                         </p>
                       )}
-                      {update.precautions && (
+                      {update.updateType !== "QUICK_HANDOFF" && update.precautions && (
                         <p className="text-[var(--kinetic-gray)] mt-0.5">
                           Precautions: {update.precautions}
                         </p>
                       )}
-                      {update.responsePattern && (
+                      {update.updateType !== "QUICK_HANDOFF" && update.responsePattern && (
                         <p className="text-[var(--kinetic-gray)] mt-0.5">
                           Response: {update.responsePattern}
                         </p>
                       )}
-                      {update.suggestedNextSteps && (
+                      {update.updateType !== "QUICK_HANDOFF" && update.suggestedNextSteps && (
                         <p className="text-[var(--kinetic-gray)] mt-0.5">
                           Next Steps: {update.suggestedNextSteps}
                         </p>
                       )}
-                      {update.notes && (
+                      {update.notesSummary && (
+                        <p className="text-[var(--kinetic-gray)] mt-0.5 italic">
+                          Summary: {update.notesSummary}
+                        </p>
+                      )}
+                      {update.notes && !update.notesSummary && (
                         <p className="text-[var(--kinetic-gray)] mt-0.5 italic">
                           {update.notes}
                         </p>

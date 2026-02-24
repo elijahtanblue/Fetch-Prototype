@@ -264,6 +264,63 @@ describe("filterSnapshotByTier", () => {
     expect(filterSnapshotByTier([], "limited")).toHaveLength(0);
     expect(filterSnapshotByTier([], "minimal")).toHaveLength(0);
   });
+
+  test("full tier passes through structured fields", () => {
+    const result = filterSnapshotByTier(
+      [makeSnapshot({
+        updateType: "STRUCTURED",
+        precautions: "Avoid lifting",
+        responsePattern: "Improves with rest",
+        suggestedNextSteps: "Reassess in 2 weeks",
+        notesSummary: "Patient improved.",
+      })],
+      "full"
+    );
+    expect(result[0].precautions).toBe("Avoid lifting");
+    expect(result[0].responsePattern).toBe("Improves with rest");
+    expect(result[0].suggestedNextSteps).toBe("Reassess in 2 weeks");
+    expect(result[0].notesSummary).toBe("Patient improved.");
+    expect(result[0].updateType).toBe("STRUCTURED");
+  });
+
+  test("limited tier includes notesSummary but excludes precautions/responsePattern/suggestedNextSteps", () => {
+    const result = filterSnapshotByTier(
+      [makeSnapshot({
+        updateType: "STRUCTURED",
+        precautions: "Avoid lifting",
+        responsePattern: "Improves with rest",
+        suggestedNextSteps: "Reassess",
+        notesSummary: "Patient improved.",
+      })],
+      "limited"
+    );
+    expect(result[0].notesSummary).toBe("Patient improved.");
+    expect(result[0].updateType).toBe("STRUCTURED");
+    expect(result[0].precautions).toBeUndefined();
+    expect(result[0].responsePattern).toBeUndefined();
+    expect(result[0].suggestedNextSteps).toBeUndefined();
+  });
+
+  test("limited tier truncates long notesSummary", () => {
+    const longSummary = "B".repeat(200);
+    const result = filterSnapshotByTier(
+      [makeSnapshot({ notesSummary: longSummary })],
+      "limited"
+    );
+    expect(result[0].notesSummary!.length).toBeLessThanOrEqual(NOTES_TRUNCATE_LENGTH + 3);
+    expect(result[0].notesSummary!.endsWith("...")).toBe(true);
+  });
+
+  test("legacy entry without new fields renders safely in all tiers", () => {
+    const legacy = makeSnapshot(); // no updateType, precautions, etc.
+    const full = filterSnapshotByTier([legacy], "full");
+    expect(full[0].painRegion).toBe("Lower back");
+    expect(full[0].notesSummary).toBeUndefined();
+
+    const limited = filterSnapshotByTier([legacy], "limited");
+    expect(limited[0].painRegion).toBe("Lower back");
+    expect(limited[0].notesSummary).toBeNull();
+  });
 });
 
 describe("Regression - clinic at 0% stays opted-in", () => {

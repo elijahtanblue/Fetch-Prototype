@@ -42,7 +42,6 @@ export async function POST(request: Request) {
   const diagnosis = body.diagnosis as string | undefined;
   const treatmentModalities = body.treatmentModalities as string | undefined;
   const redFlags = body.redFlags as boolean | undefined;
-  const notes = body.notes as string | undefined;
 
   if (updateType === "STRUCTURED") {
     if (!episodeId || !painRegion || !diagnosis || !treatmentModalities) {
@@ -52,9 +51,9 @@ export async function POST(request: Request) {
       );
     }
   } else {
-    if (!episodeId || !painRegion || !diagnosis) {
+    if (!episodeId || !painRegion || !diagnosis || !treatmentModalities) {
       return NextResponse.json(
-        { error: "Missing required fields: episodeId, painRegion, diagnosis" },
+        { error: "Missing required fields: episodeId, painRegion, diagnosis, treatmentModalities" },
         { status: 400 }
       );
     }
@@ -82,15 +81,15 @@ export async function POST(request: Request) {
     diagnosis,
     treatmentModalities: treatmentModalities ?? "",
     redFlags: redFlags ?? false,
-    notes: updateType === "STRUCTURED" ? (notesSummaryValue ?? "") : (notes ?? ""),
+    notes: notesSummaryValue ?? "",
+    notesRaw: notesRawValue || null,
+    notesSummary: notesSummaryValue || null,
   };
 
   if (updateType === "STRUCTURED") {
     createData.precautions = (body.precautions as string) || null;
     createData.responsePattern = (body.responsePattern as string) || null;
     createData.suggestedNextSteps = (body.suggestedNextSteps as string) || null;
-    createData.notesRaw = notesRawValue || null;
-    createData.notesSummary = notesSummaryValue || null;
   }
 
   const clinicalUpdate = await prisma.clinicalUpdate.create({

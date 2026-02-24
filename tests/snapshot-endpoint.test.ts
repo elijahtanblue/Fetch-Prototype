@@ -165,6 +165,119 @@ describe("GET /api/snapshots/[patientId] - Tier Integration", () => {
     expect(data.snapshot[0].redFlags).toBeUndefined();
   });
 
+  test("full tier includes notesSummary and structured fields", async () => {
+    mockClinicFindUnique.mockResolvedValue({
+      optedIn: true,
+      accessPercent: 80,
+      lastDecayAt: new Date(),
+    });
+    mockUpdateFindMany.mockResolvedValue([
+      {
+        id: "cu1",
+        painRegion: "Lower back",
+        diagnosis: "Disc herniation",
+        treatmentModalities: "Manual therapy",
+        redFlags: false,
+        notes: "Summary text",
+        updateType: "STRUCTURED",
+        precautions: "Avoid lifting",
+        responsePattern: "Improves with rest",
+        suggestedNextSteps: "Reassess in 2 weeks",
+        notesSummary: "Patient improved.",
+        notesRaw: "SECRET RAW NOTES SHOULD NOT APPEAR",
+        createdAt: new Date(),
+        episode: { reason: "Back pain", startDate: new Date() },
+        clinic: { name: "Other Clinic" },
+      },
+    ]);
+
+    const { GET } = await import("@/app/api/snapshots/[patientId]/route");
+    const req = new Request("http://localhost/api/snapshots/p1");
+    const res = await GET(req, makeParams("p1"));
+    const data = await res.json();
+
+    expect(data.accessDecision).toBe("allowed");
+    expect(data.tier).toBe("full");
+    expect(data.snapshot[0].notesSummary).toBe("Patient improved.");
+    expect(data.snapshot[0].precautions).toBe("Avoid lifting");
+    expect(data.snapshot[0].responsePattern).toBe("Improves with rest");
+    expect(data.snapshot[0].suggestedNextSteps).toBe("Reassess in 2 weeks");
+    expect(data.snapshot[0].updateType).toBe("STRUCTURED");
+    // notesRaw must NEVER appear in cross-clinic snapshot
+    expect(data.snapshot[0].notesRaw).toBeUndefined();
+  });
+
+  test("limited tier includes notesSummary but excludes structured fields", async () => {
+    mockClinicFindUnique.mockResolvedValue({
+      optedIn: true,
+      accessPercent: 50,
+      lastDecayAt: new Date(),
+    });
+    mockUpdateFindMany.mockResolvedValue([
+      {
+        id: "cu1",
+        painRegion: "Back",
+        diagnosis: "Sprain",
+        treatmentModalities: "Ice",
+        redFlags: false,
+        notes: "Short",
+        updateType: "STRUCTURED",
+        precautions: "Avoid lifting",
+        responsePattern: "Improves with rest",
+        suggestedNextSteps: "Reassess",
+        notesSummary: "Patient improved.",
+        createdAt: new Date(),
+        episode: { reason: "Pain", startDate: new Date() },
+        clinic: { name: "Other Clinic" },
+      },
+    ]);
+
+    const { GET } = await import("@/app/api/snapshots/[patientId]/route");
+    const req = new Request("http://localhost/api/snapshots/p1");
+    const res = await GET(req, makeParams("p1"));
+    const data = await res.json();
+
+    expect(data.tier).toBe("limited");
+    expect(data.snapshot[0].notesSummary).toBe("Patient improved.");
+    // Limited tier excludes precautions, responsePattern, suggestedNextSteps
+    expect(data.snapshot[0].precautions).toBeUndefined();
+    expect(data.snapshot[0].responsePattern).toBeUndefined();
+    expect(data.snapshot[0].suggestedNextSteps).toBeUndefined();
+  });
+
+  test("legacy updates without new fields still render correctly", async () => {
+    mockClinicFindUnique.mockResolvedValue({
+      optedIn: true,
+      accessPercent: 80,
+      lastDecayAt: new Date(),
+    });
+    mockUpdateFindMany.mockResolvedValue([
+      {
+        id: "cu-legacy",
+        painRegion: "Knee",
+        diagnosis: "Meniscus tear",
+        treatmentModalities: "Exercise",
+        redFlags: false,
+        notes: "Old note",
+        createdAt: new Date(),
+        episode: { reason: "Knee pain", startDate: new Date() },
+        clinic: { name: "Legacy Clinic" },
+        // No updateType, precautions, responsePattern, suggestedNextSteps, notesSummary
+      },
+    ]);
+
+    const { GET } = await import("@/app/api/snapshots/[patientId]/route");
+    const req = new Request("http://localhost/api/snapshots/p1");
+    const res = await GET(req, makeParams("p1"));
+    const data = await res.json();
+
+    expect(data.accessDecision).toBe("allowed");
+    expect(data.snapshot[0].painRegion).toBe("Knee");
+    expect(data.snapshot[0].notes).toBe("Old note");
+    expect(data.snapshot[0].updateType).toBe("STRUCTURED"); // default
+    expect(data.snapshot[0].notesSummary).toBeNull();
+  });
+
   test("returns 401 when not authenticated", async () => {
     const { auth } = await import("@/lib/auth");
     (auth as jest.Mock).mockResolvedValueOnce(null);

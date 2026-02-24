@@ -16,6 +16,7 @@ import {
   type AccessDecision,
 } from "@/domain/policy/access";
 import { getSharedUpdatesForPatient } from "@/domain/services/snapshot";
+import { generateSummary } from "@/domain/services/summarizer";
 
 // --- Types ---
 
@@ -155,6 +156,9 @@ export async function simulateUpdate(
 
   const effectiveType = input.updateType ?? "STRUCTURED";
 
+  const notesRawValue = input.notesRaw ?? null;
+  const notesSummaryValue = notesRawValue ? generateSummary(notesRawValue) : null;
+
   const update = await ctx.prisma.clinicalUpdate.create({
     data: {
       episodeId: input.episodeId,
@@ -165,12 +169,13 @@ export async function simulateUpdate(
       diagnosis: input.diagnosis,
       treatmentModalities: input.treatmentModalities,
       redFlags: input.redFlags ?? false,
-      notes: input.notes ?? "",
+      notes: notesSummaryValue ?? input.notes ?? "",
+      notesRaw: notesRawValue,
+      notesSummary: notesSummaryValue,
       ...(effectiveType === "STRUCTURED" ? {
         precautions: input.precautions ?? null,
         responsePattern: input.responsePattern ?? null,
         suggestedNextSteps: input.suggestedNextSteps ?? null,
-        notesRaw: input.notesRaw ?? null,
       } : {}),
     },
   });

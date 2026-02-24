@@ -176,6 +176,11 @@ export default function PatientSnapshot({
                           <span className="font-medium text-blue-900">
                             {entry.clinicName}
                           </span>
+                          {entry.updateType === "QUICK_HANDOFF" && (
+                            <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-xs font-medium">
+                              Quick
+                            </span>
+                          )}
                           {entry.episodeReason && (
                             <>
                               <span className="text-blue-400">|</span>
@@ -207,18 +212,18 @@ export default function PatientSnapshot({
                         </p>
                       )}
 
-                      {/* Structured fields (full tier) */}
-                      {entry.precautions && (
+                      {/* Structured fields (full tier, STRUCTURED only) */}
+                      {entry.updateType !== "QUICK_HANDOFF" && entry.precautions && (
                         <p className="text-blue-700 mt-0.5">
                           <strong>Precautions:</strong> {entry.precautions}
                         </p>
                       )}
-                      {entry.responsePattern && (
+                      {entry.updateType !== "QUICK_HANDOFF" && entry.responsePattern && (
                         <p className="text-blue-700 mt-0.5">
                           <strong>Response:</strong> {entry.responsePattern}
                         </p>
                       )}
-                      {entry.suggestedNextSteps && (
+                      {entry.updateType !== "QUICK_HANDOFF" && entry.suggestedNextSteps && (
                         <p className="text-blue-700 mt-0.5">
                           <strong>Next Steps:</strong> {entry.suggestedNextSteps}
                         </p>

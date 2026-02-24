@@ -27,8 +27,7 @@ export default function AddUpdateForm({
   const [suggestedNextSteps, setSuggestedNextSteps] = useState("");
   const [notesRaw, setNotesRaw] = useState("");
 
-  // Quick Handoff notes
-  const [notes, setNotes] = useState("");
+  // (notes state removed — QH now uses notesRaw like STRUCTURED)
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -42,7 +41,6 @@ export default function AddUpdateForm({
     setResponsePattern("");
     setSuggestedNextSteps("");
     setNotesRaw("");
-    setNotes("");
     setError("");
   }
 
@@ -67,7 +65,8 @@ export default function AddUpdateForm({
       if (suggestedNextSteps) payload.suggestedNextSteps = suggestedNextSteps;
       if (notesRaw) payload.notesRaw = notesRaw;
     } else {
-      if (notes) payload.notes = notes;
+      payload.treatmentModalities = treatmentModalities;
+      if (notesRaw) payload.notesRaw = notesRaw;
     }
 
     try {
@@ -132,7 +131,7 @@ export default function AddUpdateForm({
             </span>
             <span className="ml-1 text-xs text-[var(--kinetic-gray)]">(~30s)</span>
             <p className="text-xs text-[var(--kinetic-gray)] mt-0.5">
-              Minimal: region, diagnosis, and brief notes
+              Region, diagnosis, treatment, and brief notes
             </p>
           </button>
         </div>
@@ -275,19 +274,36 @@ export default function AddUpdateForm({
         )}
 
         {!isStructured && (
-          <div>
-            <label htmlFor={`notes-${episodeId}`} className={labelClass}>
-              Notes (optional)
-            </label>
-            <textarea
-              id={`notes-${episodeId}`}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              placeholder="Brief handoff notes..."
-              className={inputClass}
-            />
-          </div>
+          <>
+            <div>
+              <label htmlFor={`treatmentModalities-${episodeId}`} className={labelClass}>
+                Treatment Modalities
+              </label>
+              <input
+                id={`treatmentModalities-${episodeId}`}
+                type="text"
+                value={treatmentModalities}
+                onChange={(e) => setTreatmentModalities(e.target.value)}
+                required
+                placeholder="e.g. Manual therapy, exercise prescription"
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label htmlFor={`notesRaw-${episodeId}`} className={labelClass}>
+                Clinical Notes (optional)
+              </label>
+              <textarea
+                id={`notesRaw-${episodeId}`}
+                value={notesRaw}
+                onChange={(e) => setNotesRaw(e.target.value)}
+                rows={2}
+                placeholder="Brief clinical notes (a summary will be shared with other clinics)"
+                className={inputClass}
+              />
+            </div>
+          </>
         )}
 
         {error && (

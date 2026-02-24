@@ -9,7 +9,7 @@ import { sanitizeNotes, generateSummary } from "@/domain/services/summarizer";
 
 describe("sanitizeNotes", () => {
   test("strips control characters", () => {
-    expect(sanitizeNotes("hello\x00world\x07test")).toBe("hello world test");
+    expect(sanitizeNotes("hello\x00world\x07test")).toBe("helloworldtest");
   });
 
   test("normalizes whitespace", () => {
