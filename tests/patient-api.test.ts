@@ -1,8 +1,9 @@
 /**
  * API Tests for Patient endpoints:
  * - POST /api/patients (create with phone uniqueness)
- * - DELETE /api/patients/[id] (admin-only, guarded by episodes)
+ * - DELETE /api/patients/[id] (clinician own-clinic + admin, guarded by episodes)
  * - PATCH /api/patients/[id] (treatmentCompletedAt)
+ * - PATCH /api/patients/[id]/consent (clinician own-clinic + admin)
  */
 
 import "./helpers/polyfills";
@@ -154,15 +155,38 @@ describe("DELETE /api/patients/[id]", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns 403 for non-admin", async () => {
+  it("returns 403 when clinician deletes patient from another clinic", async () => {
     mockAuth.mockResolvedValueOnce({
       user: { id: "u1", role: "clinician", clinicId: "c1" },
+    });
+    mockPatientFindUnique.mockResolvedValueOnce({
+      id: "p1",
+      clinicId: "c2",
+      _count: { episodes: 0 },
     });
     const res = await DELETE(
       new Request("http://localhost") as unknown as Request,
       ctx
     );
     expect(res.status).toBe(403);
+  });
+
+  it("allows clinician to delete own-clinic patient with no episodes", async () => {
+    mockAuth.mockResolvedValueOnce({
+      user: { id: "u1", role: "clinician", clinicId: "c1" },
+    });
+    mockPatientFindUnique.mockResolvedValueOnce({
+      id: "p1",
+      clinicId: "c1",
+      _count: { episodes: 0 },
+    });
+    mockPatientDelete.mockResolvedValueOnce({});
+    const res = await DELETE(
+      new Request("http://localhost") as unknown as Request,
+      ctx
+    );
+    expect(res.status).toBe(200);
+    expect(mockPatientDelete).toHaveBeenCalledWith({ where: { id: "p1" } });
   });
 
   it("returns 404 when patient not found", async () => {
@@ -177,6 +201,7 @@ describe("DELETE /api/patients/[id]", () => {
   it("returns 409 when patient has episodes", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({
       id: "p1",
+      clinicId: "c1",
       _count: { episodes: 2 },
     });
     const res = await DELETE(
@@ -188,9 +213,10 @@ describe("DELETE /api/patients/[id]", () => {
     expect(data.error).toContain("existing visits");
   });
 
-  it("deletes patient with no episodes", async () => {
+  it("admin can delete patient from any clinic", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({
       id: "p1",
+      clinicId: "c2",
       _count: { episodes: 0 },
     });
     mockPatientDelete.mockResolvedValueOnce({});
@@ -291,6 +317,99 @@ describe("PATCH /api/patients/[id]", () => {
   it("returns 400 when no valid fields provided", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({ id: "p1", clinicId: "c1" });
     const res = await PATCH(makeReq({ foo: "bar" }), ctx);
+    expect(res.status).toBe(400);
+  });
+});
+
+// ---- PATCH /api/patients/[id]/consent ----
+describe("PATCH /api/patients/[id]/consent", () => {
+  let PATCH_CONSENT: (
+    req: Request,
+    ctx: { params: Promise<{ id: string }> }
+  ) => Promise<globalThis.Response>;
+
+  beforeAll(async () => {
+    const mod = await import("@/app/api/patients/[id]/consent/route");
+    PATCH_CONSENT = mod.PATCH as unknown as typeof PATCH_CONSENT;
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockAuth.mockResolvedValue({
+      user: { id: "u1", role: "clinician", clinicId: "c1" },
+    });
+  });
+
+  const ctx = { params: Promise.resolve({ id: "p1" }) };
+
+  function makeReq(body: Record<string, unknown>) {
+    return new Request("http://localhost/api/patients/p1/consent", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }) as unknown as Request;
+  }
+
+  it("returns 401 when unauthenticated", async () => {
+    mockAuth.mockResolvedValueOnce({ user: null });
+    const res = await PATCH_CONSENT(
+      makeReq({ consentStatus: "SHARE" }),
+      ctx
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("allows clinician to update consent for own-clinic patient", async () => {
+    mockPatientFindUnique.mockResolvedValueOnce({ id: "p1", clinicId: "c1" });
+    mockPatientUpdate.mockResolvedValueOnce({
+      id: "p1",
+      firstName: "John",
+      lastName: "Smith",
+      consentStatus: "OPT_OUT",
+      consentUpdatedAt: new Date(),
+    });
+    const res = await PATCH_CONSENT(
+      makeReq({ consentStatus: "OPT_OUT" }),
+      ctx
+    );
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.consentStatus).toBe("OPT_OUT");
+  });
+
+  it("returns 403 when clinician updates consent for another clinic's patient", async () => {
+    mockPatientFindUnique.mockResolvedValueOnce({ id: "p1", clinicId: "c2" });
+    const res = await PATCH_CONSENT(
+      makeReq({ consentStatus: "OPT_OUT" }),
+      ctx
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("allows admin to update consent for any patient", async () => {
+    mockAuth.mockResolvedValueOnce({
+      user: { id: "u1", role: "admin", clinicId: "c1" },
+    });
+    mockPatientFindUnique.mockResolvedValueOnce({ id: "p1", clinicId: "c2" });
+    mockPatientUpdate.mockResolvedValueOnce({
+      id: "p1",
+      firstName: "John",
+      lastName: "Smith",
+      consentStatus: "SHARE",
+      consentUpdatedAt: new Date(),
+    });
+    const res = await PATCH_CONSENT(
+      makeReq({ consentStatus: "SHARE" }),
+      ctx
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it("returns 400 for invalid consentStatus", async () => {
+    const res = await PATCH_CONSENT(
+      makeReq({ consentStatus: "INVALID" }),
+      ctx
+    );
     expect(res.status).toBe(400);
   });
 });

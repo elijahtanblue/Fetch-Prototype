@@ -5,7 +5,8 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 /**
- * DELETE /api/patients/[id] — Remove a patient (admin only, guarded by FK constraints).
+ * DELETE /api/patients/[id] — Remove a patient (guarded by FK constraints).
+ * Clinicians can delete patients at their own clinic; admins can delete any.
  * Only allows deletion if the patient has no episodes (no clinical data loss).
  */
 export async function DELETE(
@@ -19,11 +20,6 @@ export async function DELETE(
   }
 
   const user = session.user as unknown as Record<string, unknown>;
-
-  if (user.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   const { id } = await params;
 
   const patient = await prisma.patient.findUnique({
@@ -33,6 +29,11 @@ export async function DELETE(
 
   if (!patient) {
     return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+  }
+
+  // Clinicians can only delete patients at their own clinic
+  if (user.role !== "admin" && patient.clinicId !== user.clinicId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   if (patient._count.episodes > 0) {

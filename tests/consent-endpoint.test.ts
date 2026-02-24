@@ -3,7 +3,7 @@
  *
  * Verifies:
  * - Auth required (401)
- * - Admin-only (403)
+ * - Clinic-ownership check (clinician can update own-clinic, 403 for other)
  * - Valid consentStatus values (400)
  * - Patient not found (404)
  * - Successful toggle
@@ -56,13 +56,32 @@ describe("PATCH /api/patients/[id]/consent", () => {
     expect(res.status).toBe(401);
   });
 
-  test("returns 403 when not admin", async () => {
+  test("returns 403 when clinician updates another clinic's patient", async () => {
     mockSession = { user: { id: "u1", role: "clinician", clinicId: "c1" } };
+    mockPatientFindUnique.mockResolvedValue({ id: "p1", clinicId: "c2" });
 
     const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
     const res = await PATCH(makeRequest({ consentStatus: "OPT_OUT" }), makeParams("p1"));
 
     expect(res.status).toBe(403);
+  });
+
+  test("allows clinician to update own-clinic patient consent", async () => {
+    mockSession = { user: { id: "u1", role: "clinician", clinicId: "c1" } };
+    mockPatientFindUnique.mockResolvedValue({ id: "p1", clinicId: "c1", consentStatus: "SHARE" });
+    mockPatientUpdate.mockResolvedValue({
+      id: "p1",
+      firstName: "John",
+      lastName: "Smith",
+      consentStatus: "OPT_OUT",
+      consentUpdatedAt: new Date(),
+    });
+
+    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const res = await PATCH(makeRequest({ consentStatus: "OPT_OUT" }), makeParams("p1"));
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).consentStatus).toBe("OPT_OUT");
   });
 
   test("returns 400 for invalid consentStatus", async () => {

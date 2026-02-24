@@ -17,12 +17,6 @@ export async function PATCH(
   }
 
   const user = session.user as unknown as Record<string, unknown>;
-
-  // Admin-only for MVP
-  if (user.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   const { id } = await params;
 
   let body: Record<string, unknown>;
@@ -43,6 +37,11 @@ export async function PATCH(
   const patient = await prisma.patient.findUnique({ where: { id } });
   if (!patient) {
     return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+  }
+
+  // Clinicians can only update consent for patients at their own clinic
+  if (user.role !== "admin" && patient.clinicId !== user.clinicId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const updated = await prisma.patient.update({

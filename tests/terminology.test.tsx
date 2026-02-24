@@ -23,16 +23,28 @@ jest.mock("next-auth/react", () => ({
 import Navbar from "@/components/Navbar";
 
 describe("Navbar terminology", () => {
-  test("renders Check Access link instead of Simulation", () => {
-    render(<Navbar />);
+  test("admin sees Check Access link", () => {
+    render(<Navbar isAdmin={true} />);
     expect(screen.getByText("Check Access")).toBeInTheDocument();
     expect(screen.queryByText("Simulation")).not.toBeInTheDocument();
   });
 
   test("Check Access link points to /check-access", () => {
-    render(<Navbar />);
+    render(<Navbar isAdmin={true} />);
     const link = screen.getByText("Check Access").closest("a");
     expect(link).toHaveAttribute("href", "/check-access");
+  });
+
+  test("non-admin does NOT see Check Access link", () => {
+    render(<Navbar isAdmin={false} />);
+    expect(screen.queryByText("Check Access")).not.toBeInTheDocument();
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+  });
+
+  test("Navbar without isAdmin prop hides Check Access (defaults to false)", () => {
+    render(<Navbar />);
+    expect(screen.queryByText("Check Access")).not.toBeInTheDocument();
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
   });
 });
 

@@ -4,12 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
-const navLinks = [
+const allNavLinks = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/check-access", label: "Check Access" },
+  { href: "/check-access", label: "Check Access", adminOnly: true },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  isAdmin?: boolean;
+}
+
+export default function Navbar({ isAdmin = false }: NavbarProps) {
+  const navLinks = allNavLinks.filter((link) => !link.adminOnly || isAdmin);
   const pathname = usePathname();
 
   return (

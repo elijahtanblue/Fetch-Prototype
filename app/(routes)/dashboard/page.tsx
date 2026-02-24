@@ -197,23 +197,20 @@ export default async function DashboardPage() {
           </tbody>
         </table>
       </div>
-      {/* Patient Management (admin only) */}
-      {isAdmin && (
-        <PatientManagement
-          patients={patients.map((p) => ({
-            id: p.id,
-            firstName: p.firstName,
-            lastName: p.lastName,
-            phoneNumber: p.phoneNumber,
-            treatmentCompletedAt: p.treatmentCompletedAt?.toISOString() ?? null,
-            episodeCount: p._count.episodes,
-          }))}
-        />
-      )}
+      {/* Patient Management */}
+      <PatientManagement
+        patients={patients.map((p) => ({
+          id: p.id,
+          firstName: p.firstName,
+          lastName: p.lastName,
+          phoneNumber: p.phoneNumber,
+          treatmentCompletedAt: p.treatmentCompletedAt?.toISOString() ?? null,
+          episodeCount: p._count.episodes,
+        }))}
+      />
 
-      {/* Patient Consent (admin only) */}
-      {isAdmin && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6">
+      {/* Patient Consent */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6">
           <div className="px-4 py-3 border-b border-gray-200">
             <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
               Patient Consent
@@ -248,7 +245,6 @@ export default async function DashboardPage() {
             </tbody>
           </table>
         </div>
-      )}
     </div>
   );
 }
