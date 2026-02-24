@@ -66,6 +66,8 @@ export default async function DashboardPage() {
     clinicalUpdates: ep.clinicalUpdates.map((cu) => ({
       ...cu,
       createdAt: cu.createdAt.toISOString(),
+      updatedAt: cu.updatedAt.toISOString(),
+      dateOfVisit: cu.dateOfVisit?.toISOString() ?? null,
     })),
   }));
 
