@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 
-interface Patient {
+interface Pet {
   id: string;
   firstName: string;
   lastName: string;
 }
 
 interface CreateEpisodeFormProps {
-  patients: Patient[];
+  patients: Pet[];
   onCreated: (episode: { id: string; reason: string; startDate: string }) => void;
 }
 
@@ -18,7 +18,7 @@ export default function CreateEpisodeForm({
   onCreated,
 }: CreateEpisodeFormProps) {
   const [open, setOpen] = useState(false);
-  const [patientId, setPatientId] = useState("");
+  const [patientId, setPetId] = useState("");
   const [reason, setReason] = useState("");
   const [startDate, setStartDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -40,14 +40,14 @@ export default function CreateEpisodeForm({
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Failed to add patient visit");
+        setError(data.error || "Failed to add pet visit");
         return;
       }
 
       const episode = await res.json();
       onCreated(episode);
       setOpen(false);
-      setPatientId("");
+      setPetId("");
       setReason("");
       setStartDate(new Date().toISOString().split("T")[0]);
     } finally {
@@ -61,7 +61,7 @@ export default function CreateEpisodeForm({
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:bg-[var(--kinetic-gold-hover)] transition-colors"
       >
-        + Add Patient Visit
+        + Add Pet Visit
       </button>
     );
   }
@@ -69,7 +69,7 @@ export default function CreateEpisodeForm({
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <h3 className="text-sm font-semibold text-[var(--kinetic-dark)] mb-3">
-        Add New Patient Visit
+        Add New Pet Visit
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
@@ -77,16 +77,16 @@ export default function CreateEpisodeForm({
             htmlFor="patientId"
             className="block text-xs font-medium text-[var(--kinetic-gray)] mb-1"
           >
-            Patient
+            Pet
           </label>
           <select
             id="patientId"
             value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
+            onChange={(e) => setPetId(e.target.value)}
             required
             className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--kinetic-gold)]"
           >
-            <option value="">Select a patient</option>
+            <option value="">Select a pet</option>
             {patients.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.firstName} {p.lastName}

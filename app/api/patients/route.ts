@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
   if (existing) {
     return NextResponse.json(
-      { error: "A patient with this phone number already exists." },
+      { error: "A pet profile with this owner phone number already exists." },
       { status: 409 }
     );
   }
