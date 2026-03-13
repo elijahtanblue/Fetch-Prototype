@@ -1,8 +1,8 @@
 # Manual Verification Checklist
 
 ## Prerequisites
-1. Set `DATABASE_URL` in `.env` to your Neon Postgres connection string
-2. Set `NEXTAUTH_SECRET` to a secure random string (generate with `openssl rand -base64 32`)
+1. Set `DATABASE_URL` in `.env` to your Neon Postgres connection string (`Database_URL` is also accepted as fallback).
+2. Set `AUTH_SECRET` (preferred) or `NEXTAUTH_SECRET` (legacy, uppercase). `Nextauth_secret` is accepted as fallback.
 3. Run `npx prisma migrate dev` to create/update database tables
 4. Run `npm run db:seed` to populate seed data
 5. Run `npm run dev` to start the development server
