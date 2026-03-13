@@ -8,7 +8,7 @@ interface Clinic {
   optedIn: boolean;
 }
 
-interface Patient {
+interface Pet {
   id: string;
   firstName: string;
   lastName: string;
@@ -41,7 +41,7 @@ interface ReplayResult {
 
 interface Props {
   clinics: Clinic[];
-  patients: Patient[];
+  patients: Pet[];
 }
 
 /**
@@ -59,7 +59,7 @@ export function formatTimestamp(dateStr: string | Date): string {
 
 export default function SimulationPanel({ clinics, patients }: Props) {
   const [accessClinicId, setAccessClinicId] = useState(clinics[0]?.id ?? "");
-  const [accessPatientId, setAccessPatientId] = useState(patients[0]?.id ?? "");
+  const [accessPetId, setAccessPetId] = useState(patients[0]?.id ?? "");
 
   const [events, setEvents] = useState<SimulationEvent[]>([]);
   const [accessResult, setAccessResult] = useState<AccessDecision | null>(null);
@@ -80,7 +80,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         clinicId: accessClinicId,
-        patientId: accessPatientId,
+        patientId: accessPetId,
       }),
     });
     const data = await res.json();
@@ -95,7 +95,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         viewerClinicId: accessClinicId,
-        patientId: accessPatientId,
+        patientId: accessPetId,
       }),
     });
     const data = await res.json();
@@ -125,10 +125,10 @@ export default function SimulationPanel({ clinics, patients }: Props) {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Patient</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Pet</label>
             <select
-              value={accessPatientId}
-              onChange={(e) => setAccessPatientId(e.target.value)}
+              value={accessPetId}
+              onChange={(e) => setAccessPetId(e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
               data-testid="access-patient-selector"
             >

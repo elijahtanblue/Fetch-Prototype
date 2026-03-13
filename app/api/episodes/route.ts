@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const patient = await prisma.patient.findUnique({ where: { id: patientId } });
 
   if (!patient) {
-    return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    return NextResponse.json({ error: "Pet not found" }, { status: 404 });
   }
 
   const episode = await prisma.episode.create({

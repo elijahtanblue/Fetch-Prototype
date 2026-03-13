@@ -28,7 +28,7 @@ export async function DELETE(
   });
 
   if (!patient) {
-    return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    return NextResponse.json({ error: "Pet not found" }, { status: 404 });
   }
 
   // Clinicians can only delete patients at their own clinic
@@ -38,7 +38,7 @@ export async function DELETE(
 
   if (patient._count.episodes > 0) {
     return NextResponse.json(
-      { error: "Cannot remove patient with existing visits. Remove visits first." },
+      { error: "Cannot remove pet with existing visits. Remove visits first." },
       { status: 409 }
     );
   }
@@ -68,7 +68,7 @@ export async function PATCH(
   const patient = await prisma.patient.findUnique({ where: { id } });
 
   if (!patient) {
-    return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    return NextResponse.json({ error: "Pet not found" }, { status: 404 });
   }
 
   // Clinicians can only update patients at their own clinic

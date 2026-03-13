@@ -1,9 +1,18 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
-import { prisma } from "@/lib/db";
+
+const authSecret =
+  process.env.AUTH_SECRET ??
+  process.env.NEXTAUTH_SECRET ??
+  process.env.Nextauth_secret;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Vercel/Auth.js deployment hardening:
+  // - AUTH_SECRET is the canonical env var in Auth.js v5
+  // - NEXTAUTH_SECRET is kept as fallback for existing setups
+  secret: authSecret,
+  trustHost: true,
   providers: [
     Credentials({
       name: "Credentials",
@@ -15,6 +24,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
+
+        // Lazy-load Prisma so /api/auth/providers can respond even if the
+        // database is unavailable; DB is only required for sign-in attempts.
+        const { prisma } = await import("@/lib/db");
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },

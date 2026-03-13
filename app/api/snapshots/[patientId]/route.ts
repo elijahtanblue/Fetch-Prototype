@@ -76,7 +76,7 @@ export async function GET(
       accessDecision: "denied",
       reasonCode: "PATIENT_OPTED_OUT",
       consentOptedOut: true,
-      explanation: "This patient has opted out of sharing their history with other clinics.",
+      explanation: "This pet profile has opted out of sharing history with other clinics.",
     });
   }
 

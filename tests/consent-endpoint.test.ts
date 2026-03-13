@@ -5,7 +5,7 @@
  * - Auth required (401)
  * - Clinic-ownership check (clinician can update own-clinic, 403 for other)
  * - Valid consentStatus values (400)
- * - Patient not found (404)
+ * - Pet not found (404)
  * - Successful toggle
  */
 

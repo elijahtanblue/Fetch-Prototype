@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface PatientRow {
+interface PetRow {
   id: string;
   firstName: string;
   lastName: string;
@@ -12,13 +12,13 @@ interface PatientRow {
   episodeCount: number;
 }
 
-interface PatientManagementProps {
-  patients: PatientRow[];
+interface PetManagementProps {
+  patients: PetRow[];
 }
 
-export default function PatientManagement({ patients: initialPatients }: PatientManagementProps) {
+export default function PetManagement({ patients: initialPets }: PetManagementProps) {
   const router = useRouter();
-  const [patients, setPatients] = useState(initialPatients);
+  const [patients, setPets] = useState(initialPets);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -31,7 +31,7 @@ export default function PatientManagement({ patients: initialPatients }: Patient
       setConfirmDeleteId(null);
       return;
     }
-    setPatients((prev) => prev.filter((p) => p.id !== id));
+    setPets((prev) => prev.filter((p) => p.id !== id));
     setConfirmDeleteId(null);
     router.refresh();
   }
@@ -48,7 +48,7 @@ export default function PatientManagement({ patients: initialPatients }: Patient
       setError(data.error || "Failed to update");
       return;
     }
-    setPatients((prev) =>
+    setPets((prev) =>
       prev.map((p) => (p.id === id ? { ...p, treatmentCompletedAt: date } : p))
     );
   }
@@ -57,7 +57,7 @@ export default function PatientManagement({ patients: initialPatients }: Patient
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6" data-testid="patient-management">
       <div className="px-4 py-3 border-b border-gray-200">
         <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
-          Patient Management
+          Pet Management
         </h2>
       </div>
       {error && (
@@ -69,7 +69,7 @@ export default function PatientManagement({ patients: initialPatients }: Patient
         <thead>
           <tr className="border-b border-gray-100 text-left">
             <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
-              Patient
+              Pet
             </th>
             <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
               Phone
@@ -133,7 +133,7 @@ export default function PatientManagement({ patients: initialPatients }: Patient
                   <button
                     onClick={() => setConfirmDeleteId(patient.id)}
                     disabled={patient.episodeCount > 0}
-                    title={patient.episodeCount > 0 ? "Cannot remove patient with existing visits" : "Remove patient"}
+                    title={patient.episodeCount > 0 ? "Cannot remove pet with existing visits" : "Remove pet"}
                     data-testid={`remove-patient-${patient.id}`}
                     className="text-xs text-red-500 hover:text-red-700 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
