@@ -77,7 +77,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
       json: async () => ({
         accessDecision: "denied",
         reasonCode: "NO_SNAPSHOT",
-        explanation: "No shared patient history is available.",
+        explanation: "No shared pet history is available.",
       }),
     });
 

@@ -77,10 +77,10 @@ export default async function DashboardPage() {
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-[var(--kinetic-dark)]">
-            Shared Patient History
+            Shared Pet History
           </h1>
           <p className="text-sm text-[var(--kinetic-gray)] mt-1">
-            Access shared patient history by contributing updates.
+            Access shared pet history by contributing updates.
           </p>
         </div>
         <CreatePatientForm />
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
         );
       })()}
 
-      {/* Patient Visits Section */}
+      {/* Pet Visits Section */}
       <div className="mb-6">
         <EpisodesSection
           initialEpisodes={serializedEpisodes}
@@ -201,7 +201,7 @@ export default async function DashboardPage() {
           </tbody>
         </table>
       </div>
-      {/* Patient Management */}
+      {/* Pet Management */}
       <PatientManagement
         patients={patients.map((p) => ({
           id: p.id,
@@ -213,18 +213,18 @@ export default async function DashboardPage() {
         }))}
       />
 
-      {/* Patient Consent */}
+      {/* Pet Sharing Consent */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6">
           <div className="px-4 py-3 border-b border-gray-200">
             <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
-              Patient Consent
+              Pet Sharing Consent
             </h2>
           </div>
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 text-left">
                 <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
-                  Patient Name
+                  Pet Name
                 </th>
                 <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
                   Sharing Status

@@ -23,18 +23,18 @@ describe("CreateEpisodeForm", () => {
     mockFetch.mockReset();
   });
 
-  test("renders the Add Patient Visit button initially", () => {
+  test("renders the Add Pet Visit button initially", () => {
     const onCreated = jest.fn();
     render(<CreateEpisodeForm patients={patients} onCreated={onCreated} />);
-    expect(screen.getByText("+ Add Patient Visit")).toBeInTheDocument();
+    expect(screen.getByText("+ Add Pet Visit")).toBeInTheDocument();
   });
 
   test("shows form fields when button is clicked", () => {
     const onCreated = jest.fn();
     render(<CreateEpisodeForm patients={patients} onCreated={onCreated} />);
-    fireEvent.click(screen.getByText("+ Add Patient Visit"));
+    fireEvent.click(screen.getByText("+ Add Pet Visit"));
 
-    expect(screen.getByLabelText("Patient")).toBeInTheDocument();
+    expect(screen.getByLabelText("Pet")).toBeInTheDocument();
     expect(screen.getByLabelText("Reason for Visit")).toBeInTheDocument();
     expect(screen.getByLabelText("Start Date")).toBeInTheDocument();
   });
@@ -47,9 +47,9 @@ describe("CreateEpisodeForm", () => {
 
     const onCreated = jest.fn();
     render(<CreateEpisodeForm patients={patients} onCreated={onCreated} />);
-    fireEvent.click(screen.getByText("+ Add Patient Visit"));
+    fireEvent.click(screen.getByText("+ Add Pet Visit"));
 
-    fireEvent.change(screen.getByLabelText("Patient"), { target: { value: "p1" } });
+    fireEvent.change(screen.getByLabelText("Pet"), { target: { value: "p1" } });
     fireEvent.change(screen.getByLabelText("Reason for Visit"), {
       target: { value: "Back pain" },
     });
@@ -66,14 +66,14 @@ describe("CreateEpisodeForm", () => {
   test("shows error message on failed submission", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
-      json: async () => ({ error: "Patient not found" }),
+      json: async () => ({ error: "Pet not found" }),
     });
 
     const onCreated = jest.fn();
     render(<CreateEpisodeForm patients={patients} onCreated={onCreated} />);
-    fireEvent.click(screen.getByText("+ Add Patient Visit"));
+    fireEvent.click(screen.getByText("+ Add Pet Visit"));
 
-    fireEvent.change(screen.getByLabelText("Patient"), { target: { value: "p1" } });
+    fireEvent.change(screen.getByLabelText("Pet"), { target: { value: "p1" } });
     fireEvent.change(screen.getByLabelText("Reason for Visit"), {
       target: { value: "Back pain" },
     });
@@ -81,7 +81,7 @@ describe("CreateEpisodeForm", () => {
     fireEvent.click(screen.getByText("Add Visit"));
 
     await waitFor(() => {
-      expect(screen.getByText("Patient not found")).toBeInTheDocument();
+      expect(screen.getByText("Pet not found")).toBeInTheDocument();
     });
   });
 });

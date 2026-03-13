@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 /**
- * DELETE /api/episodes/[id] — Remove a patient visit and its clinical updates.
+ * DELETE /api/episodes/[id] — Remove a pet visit and its clinical updates.
  * Clinicians can delete episodes at their own clinic; admins can delete any.
  */
 export async function DELETE(

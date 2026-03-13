@@ -1,8 +1,8 @@
 # Manual Verification Checklist
 
 ## Prerequisites
-1. Set `DATABASE_URL` in `.env` to your Neon Postgres connection string
-2. Set `NEXTAUTH_SECRET` to a secure random string (generate with `openssl rand -base64 32`)
+1. Set `DATABASE_URL` in `.env` to your Neon Postgres connection string (`Database_URL` is also accepted as fallback).
+2. Set `AUTH_SECRET` (preferred) or `NEXTAUTH_SECRET` (legacy, uppercase). `Nextauth_secret` is accepted as fallback.
 3. Run `npx prisma migrate dev` to create/update database tables
 4. Run `npm run db:seed` to populate seed data
 5. Run `npm run dev` to start the development server
@@ -14,13 +14,13 @@
 ### Login Flow
 - [ ] Navigate to `http://localhost:3000` — should redirect to `/login`
 - [ ] Login page shows "Kinetic" branding with gold logo
-- [ ] Login page shows "Shared Patient History" subtitle
+- [ ] Login page shows "Shared Pet History" subtitle
 - [ ] Enter invalid credentials — should show "Invalid email or password." error
 - [ ] Enter valid credentials (`edsun@diversus.com` / `password123`) — should redirect to `/dashboard`
 
 ### Dashboard (Clinician View)
-- [ ] Dashboard shows "Shared Patient History" heading
-- [ ] Dashboard shows gold "Contribute Updates to Unlock Patient History" banner
+- [ ] Dashboard shows "Shared Pet History" heading
+- [ ] Dashboard shows gold "Contribute Updates to Unlock Pet History" banner
 - [ ] Dashboard shows a "Clinics" table with 3 rows
 - [ ] Each clinic row shows the clinic name and opt-in status badge
 - [ ] "City Physio" shows "Opted In" (green badge) with toggle (own clinic)
@@ -66,13 +66,13 @@
 
 ## Milestone 3 — Episodes & Clinical Updates
 
-### Add Patient Visit
+### Add Pet Visit
 - [ ] Log in as `edsun@diversus.com`
-- [ ] Dashboard shows a "Patient Visits" section with a "+ Add Patient Visit" button
-- [ ] Click "+ Add Patient Visit" — form expands with Patient, Reason, Start Date fields
-- [ ] Patient dropdown shows "John Smith" and "Winston Liang"
+- [ ] Dashboard shows a "Pet Visits" section with a "+ Add Pet Visit" button
+- [ ] Click "+ Add Pet Visit" — form expands with Pet, Reason, Start Date fields
+- [ ] Pet dropdown shows "John Smith" and "Winston Liang"
 - [ ] Fill in reason "Lower back pain assessment" and click "Add Visit"
-- [ ] Visit appears in the list showing patient name, reason, and start date
+- [ ] Visit appears in the list showing pet name, reason, and start date
 - [ ] Click "Cancel" — form collapses without creating a visit
 
 ### Add Clinical Update
@@ -86,7 +86,7 @@
 ### API Validation
 - [ ] `POST /api/episodes` without auth — returns 401
 - [ ] `POST /api/episodes` with missing `patientId` — returns 400
-- [ ] `POST /api/episodes` with non-existent patient — returns 404
+- [ ] `POST /api/episodes` with non-existent pet profile — returns 404
 - [ ] `POST /api/updates` without auth — returns 401
 - [ ] `POST /api/updates` with missing `painRegion` — returns 400
 - [ ] `POST /api/updates` with non-existent episode — returns 404
@@ -101,13 +101,13 @@
 
 ---
 
-## Milestone 5 — Access Policy & Shared Patient History
+## Milestone 5 — Access Policy & Shared Pet History
 
 ### Access Policy (Opt-In Check)
 - [ ] Log in as `edsun@diversus.com` (City Physio, opted in)
 - [ ] Create an episode + add a clinical update (to set `lastContributionAt`)
 - [ ] On the episode card, click "View Shared History"
-- [ ] If no other clinic has contributed updates for that patient → denial panel shows "NO_SNAPSHOT" with explanation
+- [ ] If no other clinic has contributed updates for that pet → denial panel shows "NO_SNAPSHOT" with explanation
 - [ ] Toggle City Physio opt-in **off** (own clinic toggle)
 - [ ] Click "View Shared History" → denial panel shows "OPTED_OUT" with explanation
 - [ ] Toggle City Physio opt-in back **on**
@@ -122,7 +122,7 @@
 ### Snapshot Data (Allowed Access)
 - [ ] Set up: Log in as `edzhang@diversus.com`, create an episode for Winston Liang, add a clinical update
 - [ ] Log in as `edsun@diversus.com` (ensure City Physio is opted in + recently contributed)
-- [ ] Click "View Shared History" on the episode for that patient
+- [ ] Click "View Shared History" on the episode for that pet
 - [ ] Snapshot panel shows shared records from "Harbour Health" (not from City Physio)
 - [ ] Snapshot entry shows clinic name, pain region, diagnosis, treatment modalities, red flags
 - [ ] Click "Hide Shared History" to collapse the panel
@@ -155,10 +155,10 @@
 - [ ] Page shows "Check Access Console" heading
 - [ ] Non-admin users (e.g. `edsun@diversus.com`) cannot access `/check-access` — redirected to `/dashboard`
 
-### Patient Transfer Demo (A → B Scenario)
+### Pet Transfer Demo (A → B Scenario)
 - [ ] Select "City Physio" from Acting Clinic dropdown
 - [ ] Click "Toggle Opt-In" — event appears in Event Log, result shows "Opted In"
-- [ ] Select "John Smith" from Patient dropdown
+- [ ] Select "John Smith" from Pet dropdown
 - [ ] Click "Simulate Visit" — result shows episode created
 - [ ] Click "Add Clinical Update" — result shows update added
 - [ ] Switch Acting Clinic to "Harbour Health"
@@ -197,7 +197,7 @@
 ## Sign-Out Verification
 - [ ] "Sign out" button is gold/prominent in the navbar (not plain text)
 - [ ] Clicking "Sign out" clears the session and redirects to the current deployment's `/login` page
-- [ ] On Vercel deployment (e.g. `https://heidi-project-e706qpp4m-elijahtanblues-projects.vercel.app`), sign-out redirects to the same domain's `/login`
+- [ ] On Vercel deployment (e.g. `https://vercel.com/elijahtanblues-projects/fetch-prototype`), sign-out redirects to the same domain's `/login`
 - [ ] On localhost, sign-out redirects to `http://localhost:3000/login`
 
 ---
@@ -207,4 +207,4 @@
 |---------|-------|---------|
 | Clinics | 3     | City Physio (opted in), Harbour Health (not opted in), Summit Rehabilitation (opted in) |
 | Users   | 3     | edsun@diversus.com (clinician, City Physio), edzhang@diversus.com (clinician, Harbour Health), elijah@admin.com (admin, Summit Rehabilitation) — all password: `password123` |
-| Patients| 2     | John Smith (DOB 1985-03-15), Winston Liang (DOB 1990-07-22) — both visible to all clinicians |
+| Pets| 2     | John Smith (DOB 1985-03-15), Winston Liang (DOB 1990-07-22) — both visible to all clinicians |

@@ -29,7 +29,7 @@ describe("CreatePatientForm", () => {
   it("renders the create button initially", () => {
     render(<CreatePatientForm />);
     expect(screen.getByTestId("create-patient-btn")).toHaveTextContent(
-      "+ Create New Patient"
+      "+ Create New Pet"
     );
   });
 
@@ -65,7 +65,7 @@ describe("CreatePatientForm", () => {
       target: { value: "0412345678" },
     });
 
-    fireEvent.click(screen.getByText("Create Patient"));
+    fireEvent.click(screen.getByText("Create Pet"));
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith("/api/patients", expect.objectContaining({
@@ -81,7 +81,7 @@ describe("CreatePatientForm", () => {
   it("shows error message on API failure", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      json: async () => ({ error: "A patient with this phone number already exists." }),
+      json: async () => ({ error: "A pet profile with this owner phone number already exists." }),
     });
 
     render(<CreatePatientForm />);
@@ -100,7 +100,7 @@ describe("CreatePatientForm", () => {
       target: { value: "0400000001" },
     });
 
-    fireEvent.click(screen.getByText("Create Patient"));
+    fireEvent.click(screen.getByText("Create Pet"));
 
     await waitFor(() => {
       expect(screen.getByTestId("patient-form-error")).toHaveTextContent(
