@@ -6,6 +6,7 @@
 3. Run `npx prisma migrate dev` to create/update database tables
 4. Run `npm run db:seed` to populate seed data
 5. Run `npm run dev` to start the development server
+6. If demo login fails, run `npm run db:seed:auth` against the same database to ensure demo credentials
 
 ---
 
