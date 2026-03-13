@@ -235,7 +235,7 @@ export function evaluateAccess(input: AccessInput): AccessDecision {
       allowed: false,
       reasonCode: "OPTED_OUT",
       explanation:
-        "Your clinic has not opted in to the shared patient history network. An admin must enable opt-in to access shared records.",
+        "Your clinic has not opted in to the shared pet history network. An admin must enable opt-in to access shared records.",
     };
   }
 
@@ -259,7 +259,7 @@ export function evaluateAccess(input: AccessInput): AccessDecision {
       accessPercent: input.accessPercent,
       reasonCode: "NO_SNAPSHOT",
       explanation:
-        "No shared patient history is available for this patient yet. Records will appear once other clinics contribute updates.",
+        "No shared pet history is available for this pet yet. Records will appear once other clinics contribute updates.",
     };
   }
 

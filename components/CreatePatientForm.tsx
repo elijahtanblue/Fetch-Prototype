@@ -27,7 +27,7 @@ export default function CreatePatientForm() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Failed to create patient");
+        setError(data.error || "Failed to create pet");
         return;
       }
 
@@ -51,7 +51,7 @@ export default function CreatePatientForm() {
         data-testid="create-patient-btn"
         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity"
       >
-        + Create New Patient
+        + Create New Pet
       </button>
     );
   }
@@ -59,7 +59,7 @@ export default function CreatePatientForm() {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4" data-testid="create-patient-form">
       <h3 className="text-sm font-semibold text-[var(--kinetic-dark)] mb-3">
-        New Patient
+        New Pet
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
@@ -128,7 +128,7 @@ export default function CreatePatientForm() {
             disabled={submitting}
             className="px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {submitting ? "Creating..." : "Create Patient"}
+            {submitting ? "Creating..." : "Create Pet"}
           </button>
           <button
             type="button"

@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import CreateEpisodeForm from "./CreateEpisodeForm";
 import AddUpdateForm from "./AddUpdateForm";
-import PatientSnapshot from "./PatientSnapshot";
+import PetSnapshot from "./PatientSnapshot";
 
-interface Patient {
+interface Pet {
   id: string;
   firstName: string;
   lastName: string;
@@ -40,7 +40,7 @@ interface Episode {
 
 interface EpisodesSectionProps {
   initialEpisodes: Episode[];
-  patients: Patient[];
+  patients: Pet[];
   clinicTier?: string;
 }
 
@@ -90,7 +90,7 @@ export default function EpisodesSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
-          Patient Visits
+          Pet Visits
         </h2>
         <CreateEpisodeForm patients={patients} onCreated={handleEpisodeCreated} />
       </div>
@@ -98,7 +98,7 @@ export default function EpisodesSection({
       {episodes.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-6 text-center">
           <p className="text-sm text-[var(--kinetic-gray)]">
-            No patient visits yet. Add one to start contributing updates.
+            No pet visits yet. Add one to start contributing updates.
           </p>
         </div>
       ) : (
@@ -270,7 +270,7 @@ export default function EpisodesSection({
                 onCreated={refreshEpisodes}
               />
 
-              <PatientSnapshot
+              <PetSnapshot
                 patientId={episode.patientId}
                 patientName={`${episode.patient.firstName} ${episode.patient.lastName}`}
                 clinicTier={clinicTier}

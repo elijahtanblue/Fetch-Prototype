@@ -36,7 +36,7 @@ export async function PATCH(
 
   const patient = await prisma.patient.findUnique({ where: { id } });
   if (!patient) {
-    return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    return NextResponse.json({ error: "Pet not found" }, { status: 404 });
   }
 
   // Clinicians can only update consent for patients at their own clinic

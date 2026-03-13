@@ -45,7 +45,7 @@ export default function LoginPage() {
             </h1>
           </div>
           <p className="text-sm text-[var(--kinetic-gray)]">
-            Shared Patient History
+            Shared Pet History
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-xs text-center text-[var(--kinetic-gray)] mt-4">
-          Contribute updates to unlock patient history.
+          Contribute updates to unlock pet history.
         </p>
       </div>
     </div>

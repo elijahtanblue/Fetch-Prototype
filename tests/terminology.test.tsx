@@ -3,9 +3,9 @@
  *
  * Verifies that user-facing labels match the updated product vocabulary:
  * - "Simulation" → "Check Access"
- * - "Episodes" → "Patient Visits"
- * - "Create Episode" → "Add Patient Visit"
- * - "+ Create New Patient" button visible on dashboard
+ * - "Episodes" → "Pet Visits"
+ * - "Create Episode" → "Add Pet Visit"
+ * - "+ Create New Pet" button visible on dashboard
  */
 
 import "@testing-library/jest-dom";
@@ -57,15 +57,15 @@ const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 describe("EpisodesSection terminology", () => {
-  test("renders Patient Visits heading instead of Episodes", () => {
+  test("renders Pet Visits heading instead of Episodes", () => {
     render(<EpisodesSection initialEpisodes={[]} patients={[]} />);
-    expect(screen.getByText("Patient Visits")).toBeInTheDocument();
+    expect(screen.getByText("Pet Visits")).toBeInTheDocument();
     expect(screen.queryByText("Episodes")).not.toBeInTheDocument();
   });
 
   test("shows updated empty state text", () => {
     render(<EpisodesSection initialEpisodes={[]} patients={[]} />);
-    expect(screen.getByText("No patient visits yet. Add one to start contributing updates.")).toBeInTheDocument();
+    expect(screen.getByText("No pet visits yet. Add one to start contributing updates.")).toBeInTheDocument();
   });
 });
 
@@ -77,9 +77,9 @@ const patients = [
 ];
 
 describe("CreateEpisodeForm terminology", () => {
-  test("renders Add Patient Visit button instead of Create Episode", () => {
+  test("renders Add Pet Visit button instead of Create Episode", () => {
     render(<CreateEpisodeForm patients={patients} onCreated={jest.fn()} />);
-    expect(screen.getByText("+ Add Patient Visit")).toBeInTheDocument();
+    expect(screen.getByText("+ Add Pet Visit")).toBeInTheDocument();
     expect(screen.queryByText("+ Create Episode")).not.toBeInTheDocument();
   });
 });

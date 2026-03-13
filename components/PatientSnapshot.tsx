@@ -32,7 +32,7 @@ interface SnapshotResponse {
   consentOptedOut?: boolean;
 }
 
-interface PatientSnapshotProps {
+interface PetSnapshotProps {
   patientId: string;
   patientName: string;
   clinicTier?: string;
@@ -44,11 +44,11 @@ const TIER_BADGE: Record<string, { bg: string; text: string; label: string }> = 
   minimal: { bg: "bg-orange-100", text: "text-orange-800", label: "Minimal" },
 };
 
-export default function PatientSnapshot({
+export default function PetSnapshot({
   patientId,
   patientName,
   clinicTier,
-}: PatientSnapshotProps) {
+}: PetSnapshotProps) {
   const [data, setData] = useState<SnapshotResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -108,7 +108,7 @@ export default function PatientSnapshot({
               data-testid="consent-banner"
             >
               <p className="text-sm text-red-800">
-                This patient has opted out of sharing their history with other clinics.
+                This pet profile has opted out of sharing history with other clinics.
               </p>
             </div>
           )}
