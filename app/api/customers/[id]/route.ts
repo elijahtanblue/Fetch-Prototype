@@ -5,8 +5,8 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 /**
- * DELETE /api/patients/[id] — Remove a patient (guarded by FK constraints).
- * Clinicians can delete patients at their own clinic; admins can delete any.
+ * DELETE /api/customers/[id] — Remove a customer (guarded by FK constraints).
+ * Vets can delete customers at their own clinic; admins can delete any.
  * Only allows deletion if the patient has no episodes (no clinical data loss).
  */
 export async function DELETE(
@@ -49,8 +49,8 @@ export async function DELETE(
 }
 
 /**
- * PATCH /api/patients/[id] — Update patient fields (treatmentCompletedAt).
- * Clinicians can update patients at their own clinic; admins can update any.
+ * PATCH /api/customers/[id] — Update customer fields (treatmentCompletedAt).
+ * Vets can update customers at their own clinic; admins can update any.
  */
 export async function PATCH(
   request: Request,
