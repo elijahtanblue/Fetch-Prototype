@@ -4,8 +4,8 @@ import { determineTier, getTierCapabilities } from "@/domain/policy/access";
 import ClinicOptInToggle from "@/components/ClinicOptInToggle";
 import ConsentToggle from "@/components/ConsentToggle";
 import EpisodesSection from "@/components/EpisodesSection";
-import CreatePatientForm from "@/components/CreatePatientForm";
-import PatientManagement from "@/components/PatientManagement";
+import CreateCustomerForm from "@/components/CreateCustomerForm";
+import CustomerManagement from "@/components/CustomerManagement";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +41,8 @@ export default async function DashboardPage() {
         id: true,
         firstName: true,
         lastName: true,
+        petName: true,
+        petType: true,
         phoneNumber: true,
         consentStatus: true,
         treatmentCompletedAt: true,
@@ -83,7 +85,7 @@ export default async function DashboardPage() {
             Access shared pet history by contributing updates.
           </p>
         </div>
-        <CreatePatientForm />
+        <CreateCustomerForm />
       </div>
 
       {/* Access Progress Bar */}
@@ -201,12 +203,14 @@ export default async function DashboardPage() {
           </tbody>
         </table>
       </div>
-      {/* Pet Management */}
-      <PatientManagement
+      {/* Customer Management */}
+      <CustomerManagement
         patients={patients.map((p) => ({
           id: p.id,
           firstName: p.firstName,
           lastName: p.lastName,
+          petName: p.petName ?? null,
+          petType: p.petType ?? null,
           phoneNumber: p.phoneNumber,
           treatmentCompletedAt: p.treatmentCompletedAt?.toISOString() ?? null,
           episodeCount: p._count.episodes,
