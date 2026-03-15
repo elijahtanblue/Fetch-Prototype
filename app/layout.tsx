@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kinetic",
-  description: "Shared Pet History — Access earned through contributing updates.",
+  title: "Fetch",
+  description: "Fetch Pet Insurance — Shared pet health history, access earned through contributing vet updates.",
 };
 
 export default function RootLayout({

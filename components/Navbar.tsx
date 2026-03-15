@@ -24,11 +24,11 @@ export default function Navbar({ isAdmin = false }: NavbarProps) {
           {/* Logo */}
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded bg-[var(--fetch-pink)] flex items-center justify-center">
-                <span className="text-white font-bold text-xs">K</span>
+              <div className="w-7 h-7 rounded bg-[var(--fetch-pink)] flex items-center justify-center" aria-label="Fetch">
+                <span className="text-white font-bold text-xs">F</span>
               </div>
               <span className="font-bold text-lg text-[var(--fetch-dark)]">
-                Kinetic
+                Fetch
               </span>
             </Link>
 
