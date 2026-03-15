@@ -50,7 +50,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
   test("returns 401 when not authenticated", async () => {
     mockSession = null;
 
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     const res = await PATCH(makeRequest({ consentStatus: "OPT_OUT" }), makeParams("p1"));
 
     expect(res.status).toBe(401);
@@ -60,7 +60,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
     mockSession = { user: { id: "u1", role: "clinician", clinicId: "c1" } };
     mockPatientFindUnique.mockResolvedValue({ id: "p1", clinicId: "c2" });
 
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     const res = await PATCH(makeRequest({ consentStatus: "OPT_OUT" }), makeParams("p1"));
 
     expect(res.status).toBe(403);
@@ -77,7 +77,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
       consentUpdatedAt: new Date(),
     });
 
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     const res = await PATCH(makeRequest({ consentStatus: "OPT_OUT" }), makeParams("p1"));
 
     expect(res.status).toBe(200);
@@ -85,14 +85,14 @@ describe("PATCH /api/patients/[id]/consent", () => {
   });
 
   test("returns 400 for invalid consentStatus", async () => {
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     const res = await PATCH(makeRequest({ consentStatus: "MAYBE" }), makeParams("p1"));
 
     expect(res.status).toBe(400);
   });
 
   test("returns 400 when consentStatus is missing", async () => {
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     const res = await PATCH(makeRequest({}), makeParams("p1"));
 
     expect(res.status).toBe(400);
@@ -101,7 +101,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
   test("returns 404 when patient not found", async () => {
     mockPatientFindUnique.mockResolvedValue(null);
 
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     const res = await PATCH(makeRequest({ consentStatus: "OPT_OUT" }), makeParams("p999"));
 
     expect(res.status).toBe(404);
@@ -117,7 +117,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
       consentUpdatedAt: new Date(),
     });
 
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     const res = await PATCH(makeRequest({ consentStatus: "OPT_OUT" }), makeParams("p1"));
     const data = await res.json();
 
@@ -139,7 +139,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
       consentUpdatedAt: new Date(),
     });
 
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     const res = await PATCH(makeRequest({ consentStatus: "SHARE" }), makeParams("p1"));
     const data = await res.json();
 
@@ -156,7 +156,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
       consentUpdatedAt: new Date(),
     });
 
-    const { PATCH } = await import("@/app/api/patients/[id]/consent/route");
+    const { PATCH } = await import("@/app/api/customers/[id]/consent/route");
     await PATCH(makeRequest({ consentStatus: "OPT_OUT" }), makeParams("p1"));
 
     const updateArg = mockPatientUpdate.mock.calls[0][0];

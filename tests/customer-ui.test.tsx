@@ -1,7 +1,7 @@
 /**
- * UI Tests for patient management components:
- * - CreatePatientForm (create new patient)
- * - PatientManagement (remove patient, treatment date)
+ * UI Tests for customer management components:
+ * - CreateCustomerForm (create new customer)
+ * - CustomerManagement (remove customer, treatment date)
  */
 
 import "@testing-library/jest-dom";
@@ -18,29 +18,29 @@ jest.mock("next/navigation", () => ({
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-import CreatePatientForm from "@/components/CreatePatientForm";
-import PatientManagement from "@/components/PatientManagement";
+import CreateCustomerForm from "@/components/CreateCustomerForm";
+import CustomerManagement from "@/components/CustomerManagement";
 
-describe("CreatePatientForm", () => {
+describe("CreateCustomerForm", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("renders the create button initially", () => {
-    render(<CreatePatientForm />);
+    render(<CreateCustomerForm />);
     expect(screen.getByTestId("create-patient-btn")).toHaveTextContent(
-      "+ Create New Pet"
+      "+ Add Customer"
     );
   });
 
   it("opens the form when button is clicked", () => {
-    render(<CreatePatientForm />);
+    render(<CreateCustomerForm />);
     fireEvent.click(screen.getByTestId("create-patient-btn"));
     expect(screen.getByTestId("create-patient-form")).toBeInTheDocument();
-    expect(screen.getByLabelText("First Name")).toBeInTheDocument();
-    expect(screen.getByLabelText("Last Name")).toBeInTheDocument();
-    expect(screen.getByLabelText("Date of Birth")).toBeInTheDocument();
-    expect(screen.getByLabelText("Phone Number")).toBeInTheDocument();
+    expect(screen.getByLabelText("First Name *")).toBeInTheDocument();
+    expect(screen.getByLabelText("Last Name *")).toBeInTheDocument();
+    expect(screen.getByLabelText("Date of Birth *")).toBeInTheDocument();
+    expect(screen.getByLabelText("Phone Number *")).toBeInTheDocument();
   });
 
   it("submits the form and refreshes on success", async () => {
@@ -49,23 +49,23 @@ describe("CreatePatientForm", () => {
       json: async () => ({ id: "p1" }),
     });
 
-    render(<CreatePatientForm />);
+    render(<CreateCustomerForm />);
     fireEvent.click(screen.getByTestId("create-patient-btn"));
 
-    fireEvent.change(screen.getByLabelText("First Name"), {
+    fireEvent.change(screen.getByLabelText("First Name *"), {
       target: { value: "Jane" },
     });
-    fireEvent.change(screen.getByLabelText("Last Name"), {
+    fireEvent.change(screen.getByLabelText("Last Name *"), {
       target: { value: "Doe" },
     });
-    fireEvent.change(screen.getByLabelText("Date of Birth"), {
+    fireEvent.change(screen.getByLabelText("Date of Birth *"), {
       target: { value: "1990-01-01" },
     });
-    fireEvent.change(screen.getByLabelText("Phone Number"), {
+    fireEvent.change(screen.getByLabelText("Phone Number *"), {
       target: { value: "0412345678" },
     });
 
-    fireEvent.click(screen.getByText("Create Pet"));
+    fireEvent.click(screen.getByText("Add Customer"));
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith("/api/customers", expect.objectContaining({
@@ -84,23 +84,23 @@ describe("CreatePatientForm", () => {
       json: async () => ({ error: "A pet profile with this owner phone number already exists." }),
     });
 
-    render(<CreatePatientForm />);
+    render(<CreateCustomerForm />);
     fireEvent.click(screen.getByTestId("create-patient-btn"));
 
-    fireEvent.change(screen.getByLabelText("First Name"), {
+    fireEvent.change(screen.getByLabelText("First Name *"), {
       target: { value: "Jane" },
     });
-    fireEvent.change(screen.getByLabelText("Last Name"), {
+    fireEvent.change(screen.getByLabelText("Last Name *"), {
       target: { value: "Doe" },
     });
-    fireEvent.change(screen.getByLabelText("Date of Birth"), {
+    fireEvent.change(screen.getByLabelText("Date of Birth *"), {
       target: { value: "1990-01-01" },
     });
-    fireEvent.change(screen.getByLabelText("Phone Number"), {
+    fireEvent.change(screen.getByLabelText("Phone Number *"), {
       target: { value: "0400000001" },
     });
 
-    fireEvent.click(screen.getByText("Create Pet"));
+    fireEvent.click(screen.getByText("Add Customer"));
 
     await waitFor(() => {
       expect(screen.getByTestId("patient-form-error")).toHaveTextContent(
@@ -110,7 +110,7 @@ describe("CreatePatientForm", () => {
   });
 
   it("closes the form when Cancel is clicked", () => {
-    render(<CreatePatientForm />);
+    render(<CreateCustomerForm />);
     fireEvent.click(screen.getByTestId("create-patient-btn"));
     expect(screen.getByTestId("create-patient-form")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Cancel"));
@@ -118,8 +118,8 @@ describe("CreatePatientForm", () => {
   });
 });
 
-describe("PatientManagement", () => {
-  const patients = [
+describe("CustomerManagement", () => {
+  const customers = [
     {
       id: "p1",
       firstName: "John",
@@ -127,6 +127,8 @@ describe("PatientManagement", () => {
       phoneNumber: "0400000001",
       treatmentCompletedAt: null,
       episodeCount: 0,
+      petName: null,
+      petType: null,
     },
     {
       id: "p2",
@@ -135,6 +137,8 @@ describe("PatientManagement", () => {
       phoneNumber: "0400000002",
       treatmentCompletedAt: "2026-02-20T00:00:00.000Z",
       episodeCount: 3,
+      petName: null,
+      petType: null,
     },
   ];
 
@@ -142,39 +146,39 @@ describe("PatientManagement", () => {
     jest.clearAllMocks();
   });
 
-  it("renders patient rows with phone numbers", () => {
-    render(<PatientManagement patients={patients} />);
+  it("renders customer rows with phone numbers", () => {
+    render(<CustomerManagement patients={customers} />);
     expect(screen.getByText("John Smith")).toBeInTheDocument();
     expect(screen.getByText("0400000001")).toBeInTheDocument();
     expect(screen.getByText("Jane Doe")).toBeInTheDocument();
   });
 
-  it("disables remove button for patients with episodes", () => {
-    render(<PatientManagement patients={patients} />);
+  it("disables remove button for customers with episodes", () => {
+    render(<CustomerManagement patients={customers} />);
     const removeBtn = screen.getByTestId("remove-patient-p2");
     expect(removeBtn).toBeDisabled();
   });
 
-  it("enables remove button for patients without episodes", () => {
-    render(<PatientManagement patients={patients} />);
+  it("enables remove button for customers without episodes", () => {
+    render(<CustomerManagement patients={customers} />);
     const removeBtn = screen.getByTestId("remove-patient-p1");
     expect(removeBtn).not.toBeDisabled();
   });
 
   it("shows confirmation dialog before delete", () => {
-    render(<PatientManagement patients={patients} />);
+    render(<CustomerManagement patients={customers} />);
     fireEvent.click(screen.getByTestId("remove-patient-p1"));
     expect(screen.getByText("Confirm?")).toBeInTheDocument();
     expect(screen.getByTestId("confirm-delete-p1")).toBeInTheDocument();
   });
 
-  it("deletes patient on confirm", async () => {
+  it("deletes customer on confirm", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true, id: "p1" }),
     });
 
-    render(<PatientManagement patients={patients} />);
+    render(<CustomerManagement patients={customers} />);
     fireEvent.click(screen.getByTestId("remove-patient-p1"));
     fireEvent.click(screen.getByTestId("confirm-delete-p1"));
 
@@ -195,7 +199,7 @@ describe("PatientManagement", () => {
       json: async () => ({ id: "p1" }),
     });
 
-    render(<PatientManagement patients={patients} />);
+    render(<CustomerManagement patients={customers} />);
     const dateInput = screen.getByTestId("treatment-date-p1");
     fireEvent.change(dateInput, { target: { value: "2026-02-24" } });
 
@@ -208,7 +212,7 @@ describe("PatientManagement", () => {
   });
 
   it("shows Clear button when treatment date is set", () => {
-    render(<PatientManagement patients={patients} />);
+    render(<CustomerManagement patients={customers} />);
     expect(screen.getByTestId("clear-treatment-date-p2")).toBeInTheDocument();
     expect(screen.queryByTestId("clear-treatment-date-p1")).not.toBeInTheDocument();
   });
@@ -219,7 +223,7 @@ describe("PatientManagement", () => {
       json: async () => ({ id: "p2" }),
     });
 
-    render(<PatientManagement patients={patients} />);
+    render(<CustomerManagement patients={customers} />);
     fireEvent.click(screen.getByTestId("clear-treatment-date-p2"));
 
     await waitFor(() => {

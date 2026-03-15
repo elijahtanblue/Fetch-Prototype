@@ -8,19 +8,19 @@
 
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import PatientSnapshot from "@/components/PatientSnapshot";
+import CustomerSnapshot from "@/components/CustomerSnapshot";
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-describe("PatientSnapshot - Conditional Rendering", () => {
+describe("CustomerSnapshot - Conditional Rendering", () => {
   beforeEach(() => {
     mockFetch.mockReset();
   });
 
   test("renders View Shared History button initially", () => {
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" />
     );
     expect(screen.getByText("View Shared History")).toBeInTheDocument();
   });
@@ -36,7 +36,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -61,7 +61,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -82,7 +82,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -115,7 +115,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -150,7 +150,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" />
     );
     fireEvent.click(screen.getByText("View Shared History"));
 
@@ -163,7 +163,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
 
   test("shows locked indicator when clinicTier is inactive", () => {
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" clinicTier="inactive" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" clinicTier="inactive" />
     );
     expect(screen.getByTestId("snapshot-locked-inactive")).toBeInTheDocument();
     expect(screen.getByText("View Shared History (Locked)")).toBeInTheDocument();
@@ -173,7 +173,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
 
   test("shows clickable button when clinicTier is full", () => {
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" clinicTier="full" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" clinicTier="full" />
     );
     expect(screen.queryByTestId("snapshot-locked-inactive")).not.toBeInTheDocument();
     expect(screen.getByText("View Shared History")).toBeInTheDocument();
@@ -181,7 +181,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
 
   test("shows clickable button when clinicTier is minimal", () => {
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" clinicTier="minimal" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" clinicTier="minimal" />
     );
     expect(screen.queryByTestId("snapshot-locked-inactive")).not.toBeInTheDocument();
     expect(screen.getByText("View Shared History")).toBeInTheDocument();
@@ -189,7 +189,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
 
   test("shows clickable button when clinicTier is not provided", () => {
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" />
     );
     expect(screen.queryByTestId("snapshot-locked-inactive")).not.toBeInTheDocument();
     expect(screen.getByText("View Shared History")).toBeInTheDocument();
@@ -205,7 +205,7 @@ describe("PatientSnapshot - Conditional Rendering", () => {
     });
 
     render(
-      <PatientSnapshot patientId="p1" patientName="Winston Liang" />
+      <CustomerSnapshot patientId="p1" patientName="Winston Liang" />
     );
 
     fireEvent.click(screen.getByText("View Shared History"));

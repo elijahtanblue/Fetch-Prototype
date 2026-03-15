@@ -1,9 +1,9 @@
 /**
- * API Tests for Patient endpoints:
- * - POST /api/patients (create with phone uniqueness)
- * - DELETE /api/patients/[id] (clinician own-clinic + admin, guarded by episodes)
- * - PATCH /api/patients/[id] (treatmentCompletedAt)
- * - PATCH /api/patients/[id]/consent (clinician own-clinic + admin)
+ * API Tests for Customer endpoints:
+ * - POST /api/customers (create with phone uniqueness)
+ * - DELETE /api/customers/[id] (vet own-clinic + admin, guarded by episodes)
+ * - PATCH /api/customers/[id] (treatmentCompletedAt)
+ * - PATCH /api/customers/[id]/consent (vet own-clinic + admin)
  */
 
 import "./helpers/polyfills";
@@ -33,12 +33,12 @@ jest.mock("@/lib/auth", () => ({
   auth: (...args: unknown[]) => mockAuth(...args),
 }));
 
-// ---- POST /api/patients ----
-describe("POST /api/patients", () => {
+// ---- POST /api/customers ----
+describe("POST /api/customers", () => {
   let POST: (req: Request) => Promise<globalThis.Response>;
 
   beforeAll(async () => {
-    const mod = await import("@/app/api/patients/route");
+    const mod = await import("@/app/api/customers/route");
     POST = mod.POST as unknown as typeof POST;
   });
 
@@ -50,7 +50,7 @@ describe("POST /api/patients", () => {
   });
 
   function makeReq(body: Record<string, unknown>) {
-    return new Request("http://localhost/api/patients", {
+    return new Request("http://localhost/api/customers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -92,7 +92,7 @@ describe("POST /api/patients", () => {
     expect(data.error).toContain("already exists");
   });
 
-  it("creates patient with cleaned phone number", async () => {
+  it("creates customer with cleaned phone number", async () => {
     mockPatientFindUnique.mockResolvedValueOnce(null);
     mockPatientCreate.mockResolvedValueOnce({
       id: "p1",
@@ -114,7 +114,7 @@ describe("POST /api/patients", () => {
     });
   });
 
-  it("assigns patient to current user's clinic", async () => {
+  it("assigns customer to current user's clinic", async () => {
     mockPatientFindUnique.mockResolvedValueOnce(null);
     mockPatientCreate.mockResolvedValueOnce({ id: "p1" });
 
@@ -125,15 +125,15 @@ describe("POST /api/patients", () => {
   });
 });
 
-// ---- DELETE /api/patients/[id] ----
-describe("DELETE /api/patients/[id]", () => {
+// ---- DELETE /api/customers/[id] ----
+describe("DELETE /api/customers/[id]", () => {
   let DELETE: (
     req: Request,
     ctx: { params: Promise<{ id: string }> }
   ) => Promise<globalThis.Response>;
 
   beforeAll(async () => {
-    const mod = await import("@/app/api/patients/[id]/route");
+    const mod = await import("@/app/api/customers/[id]/route");
     DELETE = mod.DELETE as unknown as typeof DELETE;
   });
 
@@ -155,7 +155,7 @@ describe("DELETE /api/patients/[id]", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns 403 when clinician deletes patient from another clinic", async () => {
+  it("returns 403 when vet deletes customer from another clinic", async () => {
     mockAuth.mockResolvedValueOnce({
       user: { id: "u1", role: "clinician", clinicId: "c1" },
     });
@@ -171,7 +171,7 @@ describe("DELETE /api/patients/[id]", () => {
     expect(res.status).toBe(403);
   });
 
-  it("allows clinician to delete own-clinic patient with no episodes", async () => {
+  it("allows vet to delete own-clinic customer with no episodes", async () => {
     mockAuth.mockResolvedValueOnce({
       user: { id: "u1", role: "clinician", clinicId: "c1" },
     });
@@ -189,7 +189,7 @@ describe("DELETE /api/patients/[id]", () => {
     expect(mockPatientDelete).toHaveBeenCalledWith({ where: { id: "p1" } });
   });
 
-  it("returns 404 when patient not found", async () => {
+  it("returns 404 when customer not found", async () => {
     mockPatientFindUnique.mockResolvedValueOnce(null);
     const res = await DELETE(
       new Request("http://localhost") as unknown as Request,
@@ -198,7 +198,7 @@ describe("DELETE /api/patients/[id]", () => {
     expect(res.status).toBe(404);
   });
 
-  it("returns 409 when patient has episodes", async () => {
+  it("returns 409 when customer has episodes", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({
       id: "p1",
       clinicId: "c1",
@@ -213,7 +213,7 @@ describe("DELETE /api/patients/[id]", () => {
     expect(data.error).toContain("existing visits");
   });
 
-  it("admin can delete patient from any clinic", async () => {
+  it("admin can delete customer from any clinic", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({
       id: "p1",
       clinicId: "c2",
@@ -229,15 +229,15 @@ describe("DELETE /api/patients/[id]", () => {
   });
 });
 
-// ---- PATCH /api/patients/[id] ----
-describe("PATCH /api/patients/[id]", () => {
+// ---- PATCH /api/customers/[id] ----
+describe("PATCH /api/customers/[id]", () => {
   let PATCH: (
     req: Request,
     ctx: { params: Promise<{ id: string }> }
   ) => Promise<globalThis.Response>;
 
   beforeAll(async () => {
-    const mod = await import("@/app/api/patients/[id]/route");
+    const mod = await import("@/app/api/customers/[id]/route");
     PATCH = mod.PATCH as unknown as typeof PATCH;
   });
 
@@ -251,7 +251,7 @@ describe("PATCH /api/patients/[id]", () => {
   const ctx = { params: Promise.resolve({ id: "p1" }) };
 
   function makeReq(body: Record<string, unknown>) {
-    return new Request("http://localhost/api/patients/p1", {
+    return new Request("http://localhost/api/customers/p1", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -264,7 +264,7 @@ describe("PATCH /api/patients/[id]", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns 403 when clinician updates patient from another clinic", async () => {
+  it("returns 403 when vet updates customer from another clinic", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({ id: "p1", clinicId: "c2" });
     const res = await PATCH(
       makeReq({ treatmentCompletedAt: "2026-02-24" }),
@@ -273,7 +273,7 @@ describe("PATCH /api/patients/[id]", () => {
     expect(res.status).toBe(403);
   });
 
-  it("allows clinician to update own-clinic patient", async () => {
+  it("allows vet to update own-clinic customer", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({ id: "p1", clinicId: "c1" });
     mockPatientUpdate.mockResolvedValueOnce({ id: "p1", treatmentCompletedAt: new Date("2026-02-24") });
     const res = await PATCH(
@@ -287,7 +287,7 @@ describe("PATCH /api/patients/[id]", () => {
     });
   });
 
-  it("allows admin to update any patient", async () => {
+  it("allows admin to update any customer", async () => {
     mockAuth.mockResolvedValueOnce({
       user: { id: "u1", role: "admin", clinicId: "c1" },
     });
@@ -321,15 +321,15 @@ describe("PATCH /api/patients/[id]", () => {
   });
 });
 
-// ---- PATCH /api/patients/[id]/consent ----
-describe("PATCH /api/patients/[id]/consent", () => {
+// ---- PATCH /api/customers/[id]/consent ----
+describe("PATCH /api/customers/[id]/consent", () => {
   let PATCH_CONSENT: (
     req: Request,
     ctx: { params: Promise<{ id: string }> }
   ) => Promise<globalThis.Response>;
 
   beforeAll(async () => {
-    const mod = await import("@/app/api/patients/[id]/consent/route");
+    const mod = await import("@/app/api/customers/[id]/consent/route");
     PATCH_CONSENT = mod.PATCH as unknown as typeof PATCH_CONSENT;
   });
 
@@ -343,7 +343,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
   const ctx = { params: Promise.resolve({ id: "p1" }) };
 
   function makeReq(body: Record<string, unknown>) {
-    return new Request("http://localhost/api/patients/p1/consent", {
+    return new Request("http://localhost/api/customers/p1/consent", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -359,7 +359,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
     expect(res.status).toBe(401);
   });
 
-  it("allows clinician to update consent for own-clinic patient", async () => {
+  it("allows vet to update consent for own-clinic customer", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({ id: "p1", clinicId: "c1" });
     mockPatientUpdate.mockResolvedValueOnce({
       id: "p1",
@@ -377,7 +377,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
     expect(data.consentStatus).toBe("OPT_OUT");
   });
 
-  it("returns 403 when clinician updates consent for another clinic's patient", async () => {
+  it("returns 403 when vet updates consent for another clinic's customer", async () => {
     mockPatientFindUnique.mockResolvedValueOnce({ id: "p1", clinicId: "c2" });
     const res = await PATCH_CONSENT(
       makeReq({ consentStatus: "OPT_OUT" }),
@@ -386,7 +386,7 @@ describe("PATCH /api/patients/[id]/consent", () => {
     expect(res.status).toBe(403);
   });
 
-  it("allows admin to update consent for any patient", async () => {
+  it("allows admin to update consent for any customer", async () => {
     mockAuth.mockResolvedValueOnce({
       user: { id: "u1", role: "admin", clinicId: "c1" },
     });
