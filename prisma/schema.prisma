@@ -42,17 +42,27 @@ model User {
 }
 
 model Patient {
-  id                   String    @id @default(cuid())
-  firstName            String
-  lastName             String
-  dateOfBirth          DateTime
-  phoneNumber          String    @unique
-  clinicId             String
-  consentStatus        String    @default("SHARE")
-  consentUpdatedAt     DateTime?
-  treatmentCompletedAt DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                        String    @id @default(cuid())
+  firstName                 String
+  lastName                  String
+  dateOfBirth               DateTime
+  phoneNumber               String    @unique
+  clinicId                  String
+  consentStatus             String    @default("SHARE")
+  consentUpdatedAt          DateTime?
+  treatmentCompletedAt      DateTime?
+  // Pet fields (1:1 with customer for this prototype)
+  petName                   String?
+  petBreed                  String?
+  petType                   String?   // "CAT" or "DOG"
+  petDesexed                Boolean?
+  petGender                 String?
+  petDateOfBirth            DateTime?
+  // Customer (owner) fields
+  address                   String?
+  insuranceCommencementDate DateTime?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 
   clinic   Clinic    @relation(fields: [clinicId], references: [id])
   episodes Episode[]
