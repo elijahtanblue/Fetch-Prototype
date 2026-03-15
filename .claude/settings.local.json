@@ -21,7 +21,13 @@
       "Bash(npm run:*)",
       "Bash(head -10 app/\\\\\\(routes\\\\\\)/dashboard/page.tsx)",
       "Bash(rm tests/patient-api.test.ts)",
-      "Bash(rm tests/patient-ui.test.tsx)"
+      "Bash(rm tests/patient-ui.test.tsx)",
+      "Bash(find \"d:/Vibe Coded Projects/Fetch-Prototype/app/\\(routes\\)\" -type f -name \"*.tsx\" -o -name \"*.ts\")",
+      "Bash(node -e \"const t = require\\(''d:/Vibe Coded Projects/Fetch-Prototype/tsconfig.json''\\); console.log\\(JSON.stringify\\(t.compilerOptions?.paths, null, 2\\)\\)\")",
+      "Bash(node -e \"const j = require\\(''d:/Vibe Coded Projects/Fetch-Prototype/jest.config.js''\\); console.log\\(JSON.stringify\\(j, null, 2\\)\\)\")",
+      "Bash(node -e \"const j = require\\(''d:/Vibe Coded Projects/Fetch-Prototype/package.json''\\); const s = j.jest || {}; console.log\\(''setupFilesAfterFramework:'', s.setupFilesAfterFramework\\); console.log\\(''jest key:'', JSON.stringify\\(s, null, 2\\)\\)\")",
+      "Bash(node -e \"const nj = require\\(''d:/Vibe Coded Projects/Fetch-Prototype/node_modules/next/jest.js''\\); console.log\\(typeof nj\\)\")",
+      "Bash(ls \"d:/Vibe Coded Projects/Fetch-Prototype/app/\\(routes\\)/\")"
     ]
   }
 }
