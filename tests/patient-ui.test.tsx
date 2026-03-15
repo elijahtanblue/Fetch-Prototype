@@ -68,7 +68,7 @@ describe("CreatePatientForm", () => {
     fireEvent.click(screen.getByText("Create Pet"));
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("/api/patients", expect.objectContaining({
+      expect(mockFetch).toHaveBeenCalledWith("/api/customers", expect.objectContaining({
         method: "POST",
       }));
     });
@@ -179,7 +179,7 @@ describe("PatientManagement", () => {
     fireEvent.click(screen.getByTestId("confirm-delete-p1"));
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("/api/patients/p1", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/customers/p1", {
         method: "DELETE",
       });
     });
@@ -201,7 +201,7 @@ describe("PatientManagement", () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        "/api/patients/p1",
+        "/api/customers/p1",
         expect.objectContaining({ method: "PATCH" })
       );
     });
@@ -224,7 +224,7 @@ describe("PatientManagement", () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        "/api/patients/p2",
+        "/api/customers/p2",
         expect.objectContaining({
           method: "PATCH",
           body: JSON.stringify({ treatmentCompletedAt: null }),

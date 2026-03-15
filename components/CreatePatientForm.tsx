@@ -19,7 +19,7 @@ export default function CreatePatientForm() {
     setSubmitting(true);
 
     try {
-      const res = await fetch("/api/patients", {
+      const res = await fetch("/api/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ firstName, lastName, dateOfBirth, phoneNumber }),

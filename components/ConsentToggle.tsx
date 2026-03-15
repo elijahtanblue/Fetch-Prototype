@@ -16,7 +16,7 @@ export default function ConsentToggle({ patientId, patientName, initialConsent }
     setLoading(true);
     const newStatus = consent === "SHARE" ? "OPT_OUT" : "SHARE";
     try {
-      const res = await fetch(`/api/patients/${patientId}/consent`, {
+      const res = await fetch(`/api/customers/${patientId}/consent`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ consentStatus: newStatus }),

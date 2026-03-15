@@ -24,7 +24,7 @@ export default function PetManagement({ patients: initialPets }: PetManagementPr
 
   async function handleDelete(id: string) {
     setError("");
-    const res = await fetch(`/api/patients/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
     if (!res.ok) {
       const data = await res.json();
       setError(data.error || "Failed to remove patient");
@@ -38,7 +38,7 @@ export default function PetManagement({ patients: initialPets }: PetManagementPr
 
   async function handleTreatmentDate(id: string, date: string | null) {
     setError("");
-    const res = await fetch(`/api/patients/${id}`, {
+    const res = await fetch(`/api/customers/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ treatmentCompletedAt: date }),
