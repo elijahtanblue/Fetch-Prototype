@@ -30,6 +30,7 @@ Create `tests/records-table.test.tsx`:
  * vet clinic) correctly narrow the rendered rows, compose together, and
  * show the empty state when nothing matches.
  */
+import "@testing-library/jest-dom";
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import RecordsTable from "@/components/RecordsTable";
