@@ -59,7 +59,7 @@ export default function CreateEpisodeForm({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:bg-[var(--kinetic-gold-hover)] transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--fetch-pink)] text-white text-sm font-medium rounded-md hover:bg-[var(--fetch-pink-hover)] transition-colors"
       >
         + Add Pet Visit
       </button>
@@ -68,14 +68,14 @@ export default function CreateEpisodeForm({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <h3 className="text-sm font-semibold text-[var(--kinetic-dark)] mb-3">
+      <h3 className="text-sm font-semibold text-[var(--fetch-dark)] mb-3">
         Add New Pet Visit
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label
             htmlFor="patientId"
-            className="block text-xs font-medium text-[var(--kinetic-gray)] mb-1"
+            className="block text-xs font-medium text-[var(--fetch-gray)] mb-1"
           >
             Pet
           </label>
@@ -84,7 +84,7 @@ export default function CreateEpisodeForm({
             value={patientId}
             onChange={(e) => setPetId(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--kinetic-gold)]"
+            className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--fetch-pink)]"
           >
             <option value="">Select a pet</option>
             {patients.map((p) => (
@@ -98,7 +98,7 @@ export default function CreateEpisodeForm({
         <div>
           <label
             htmlFor="reason"
-            className="block text-xs font-medium text-[var(--kinetic-gray)] mb-1"
+            className="block text-xs font-medium text-[var(--fetch-gray)] mb-1"
           >
             Reason for Visit
           </label>
@@ -109,14 +109,14 @@ export default function CreateEpisodeForm({
             onChange={(e) => setReason(e.target.value)}
             required
             placeholder="e.g. Lower back pain assessment"
-            className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--kinetic-gold)]"
+            className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--fetch-pink)]"
           />
         </div>
 
         <div>
           <label
             htmlFor="startDate"
-            className="block text-xs font-medium text-[var(--kinetic-gray)] mb-1"
+            className="block text-xs font-medium text-[var(--fetch-gray)] mb-1"
           >
             Start Date
           </label>
@@ -126,7 +126,7 @@ export default function CreateEpisodeForm({
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--kinetic-gold)]"
+            className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--fetch-pink)]"
           />
         </div>
 
@@ -138,14 +138,14 @@ export default function CreateEpisodeForm({
           <button
             type="submit"
             disabled={loading}
-            className="px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:bg-[var(--kinetic-gold-hover)] transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 bg-[var(--fetch-pink)] text-white text-sm font-medium rounded-md hover:bg-[var(--fetch-pink-hover)] transition-colors disabled:opacity-50"
           >
             {loading ? "Adding..." : "Add Visit"}
           </button>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="px-3 py-1.5 text-sm text-[var(--kinetic-gray)] hover:text-[var(--kinetic-dark)] transition-colors"
+            className="px-3 py-1.5 text-sm text-[var(--fetch-gray)] hover:text-[var(--fetch-dark)] transition-colors"
           >
             Cancel
           </button>

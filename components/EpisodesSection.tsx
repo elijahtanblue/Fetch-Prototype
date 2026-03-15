@@ -89,7 +89,7 @@ export default function EpisodesSection({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
+        <h2 className="text-sm font-semibold text-[var(--fetch-dark)]">
           Pet Visits
         </h2>
         <CreateEpisodeForm patients={patients} onCreated={handleEpisodeCreated} />
@@ -97,7 +97,7 @@ export default function EpisodesSection({
 
       {episodes.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-6 text-center">
-          <p className="text-sm text-[var(--kinetic-gray)]">
+          <p className="text-sm text-[var(--fetch-gray)]">
             No pet visits yet. Add one to start contributing updates.
           </p>
         </div>
@@ -110,18 +110,18 @@ export default function EpisodesSection({
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-[var(--kinetic-dark)]">
+                  <p className="text-sm font-medium text-[var(--fetch-dark)]">
                     {episode.patient.firstName} {episode.patient.lastName}
                   </p>
-                  <p className="text-xs text-[var(--kinetic-gray)] mt-0.5">
+                  <p className="text-xs text-[var(--fetch-gray)] mt-0.5">
                     {episode.reason}
                   </p>
-                  <p className="text-xs text-[var(--kinetic-gray)]">
+                  <p className="text-xs text-[var(--fetch-gray)]">
                     Started: {new Date(episode.startDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-[var(--kinetic-gray)]">
+                  <span className="text-xs text-[var(--fetch-gray)]">
                     {episode.clinicalUpdates.length} update{episode.clinicalUpdates.length !== 1 ? "s" : ""}
                   </span>
                   {deleteEpisodeConfirmId === episode.id ? (
@@ -136,7 +136,7 @@ export default function EpisodesSection({
                       </button>
                       <button
                         onClick={() => setDeleteEpisodeConfirmId(null)}
-                        className="text-xs text-[var(--kinetic-gray)]"
+                        className="text-xs text-[var(--fetch-gray)]"
                       >
                         No
                       </button>
@@ -170,11 +170,11 @@ export default function EpisodesSection({
                       ) : (
                         <>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-[var(--kinetic-dark)]">
+                            <span className="font-medium text-[var(--fetch-dark)]">
                               {update.painRegion}
                             </span>
-                            <span className="text-[var(--kinetic-gray)]">|</span>
-                            <span className="text-[var(--kinetic-gray)]">
+                            <span className="text-[var(--fetch-gray)]">|</span>
+                            <span className="text-[var(--fetch-gray)]">
                               {update.diagnosis}
                             </span>
                             {update.redFlags && (
@@ -188,38 +188,38 @@ export default function EpisodesSection({
                               </span>
                             )}
                             {update.dateOfVisit && (
-                              <span className="text-[var(--kinetic-gray)]" data-testid={`visit-date-${update.id}`}>
+                              <span className="text-[var(--fetch-gray)]" data-testid={`visit-date-${update.id}`}>
                                 Visit: {new Date(update.dateOfVisit).toLocaleDateString()}
                               </span>
                             )}
                           </div>
                           {update.treatmentModalities && (
-                            <p className="text-[var(--kinetic-gray)] mt-1">
+                            <p className="text-[var(--fetch-gray)] mt-1">
                               Treatment: {update.treatmentModalities}
                             </p>
                           )}
                           {update.updateType !== "QUICK_HANDOFF" && update.precautions && (
-                            <p className="text-[var(--kinetic-gray)] mt-0.5">
+                            <p className="text-[var(--fetch-gray)] mt-0.5">
                               Precautions: {update.precautions}
                             </p>
                           )}
                           {update.updateType !== "QUICK_HANDOFF" && update.responsePattern && (
-                            <p className="text-[var(--kinetic-gray)] mt-0.5">
+                            <p className="text-[var(--fetch-gray)] mt-0.5">
                               Response: {update.responsePattern}
                             </p>
                           )}
                           {update.updateType !== "QUICK_HANDOFF" && update.suggestedNextSteps && (
-                            <p className="text-[var(--kinetic-gray)] mt-0.5">
+                            <p className="text-[var(--fetch-gray)] mt-0.5">
                               Next Steps: {update.suggestedNextSteps}
                             </p>
                           )}
                           {update.notesSummary && (
-                            <p className="text-[var(--kinetic-gray)] mt-0.5 italic">
+                            <p className="text-[var(--fetch-gray)] mt-0.5 italic">
                               Summary: {update.notesSummary}
                             </p>
                           )}
                           {update.notes && !update.notesSummary && (
-                            <p className="text-[var(--kinetic-gray)] mt-0.5 italic">
+                            <p className="text-[var(--fetch-gray)] mt-0.5 italic">
                               {update.notes}
                             </p>
                           )}
@@ -227,7 +227,7 @@ export default function EpisodesSection({
                             <button
                               onClick={() => setEditingId(update.id)}
                               data-testid={`edit-update-${update.id}`}
-                              className="text-xs text-[var(--kinetic-gold)] hover:underline"
+                              className="text-xs text-[var(--fetch-pink)] hover:underline"
                             >
                               Edit
                             </button>
@@ -243,7 +243,7 @@ export default function EpisodesSection({
                                 </button>
                                 <button
                                   onClick={() => setDeleteConfirmId(null)}
-                                  className="text-xs text-[var(--kinetic-gray)]"
+                                  className="text-xs text-[var(--fetch-gray)]"
                                 >
                                   No
                                 </button>
@@ -373,14 +373,14 @@ function EditUpdateInline({
         <button
           type="submit"
           disabled={saving}
-          className="px-2 py-1 bg-[var(--kinetic-gold)] text-white text-xs rounded hover:opacity-90 disabled:opacity-50"
+          className="px-2 py-1 bg-[var(--fetch-pink)] text-white text-xs rounded hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Saving..." : "Save"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-2 py-1 text-xs text-[var(--kinetic-gray)] hover:text-[var(--kinetic-dark)]"
+          className="px-2 py-1 text-xs text-[var(--fetch-gray)] hover:text-[var(--fetch-dark)]"
         >
           Cancel
         </button>

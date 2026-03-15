@@ -56,7 +56,7 @@ export default function PetManagement({ patients: initialPets }: PetManagementPr
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6" data-testid="patient-management">
       <div className="px-4 py-3 border-b border-gray-200">
-        <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
+        <h2 className="text-sm font-semibold text-[var(--fetch-dark)]">
           Pet Management
         </h2>
       </div>
@@ -68,16 +68,16 @@ export default function PetManagement({ patients: initialPets }: PetManagementPr
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-100 text-left">
-            <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+            <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
               Pet
             </th>
-            <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+            <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
               Phone
             </th>
-            <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+            <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
               Treatment Completed
             </th>
-            <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+            <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
               Actions
             </th>
           </tr>
@@ -85,10 +85,10 @@ export default function PetManagement({ patients: initialPets }: PetManagementPr
         <tbody>
           {patients.map((patient) => (
             <tr key={patient.id} className="border-b border-gray-50 last:border-b-0">
-              <td className="px-4 py-3 text-sm text-[var(--kinetic-dark)]">
+              <td className="px-4 py-3 text-sm text-[var(--fetch-dark)]">
                 {patient.firstName} {patient.lastName}
               </td>
-              <td className="px-4 py-3 text-sm text-[var(--kinetic-gray)]">
+              <td className="px-4 py-3 text-sm text-[var(--fetch-gray)]">
                 {patient.phoneNumber}
               </td>
               <td className="px-4 py-3">
@@ -99,7 +99,7 @@ export default function PetManagement({ patients: initialPets }: PetManagementPr
                     handleTreatmentDate(patient.id, e.target.value || null)
                   }
                   data-testid={`treatment-date-${patient.id}`}
-                  className="px-2 py-1 border border-gray-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[var(--kinetic-gold)]"
+                  className="px-2 py-1 border border-gray-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[var(--fetch-pink)]"
                 />
                 {patient.treatmentCompletedAt && (
                   <button
@@ -124,7 +124,7 @@ export default function PetManagement({ patients: initialPets }: PetManagementPr
                     </button>
                     <button
                       onClick={() => setConfirmDeleteId(null)}
-                      className="text-xs text-[var(--kinetic-gray)] hover:text-gray-700"
+                      className="text-xs text-[var(--fetch-gray)] hover:text-gray-700"
                     >
                       Cancel
                     </button>

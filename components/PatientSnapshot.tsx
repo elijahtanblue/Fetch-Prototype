@@ -88,7 +88,7 @@ export default function PetSnapshot({
       ) : (
         <button
           onClick={handleToggle}
-          className="text-xs text-[var(--kinetic-gold)] hover:underline font-medium"
+          className="text-xs text-[var(--fetch-pink)] hover:underline font-medium"
         >
           {open ? "Hide Shared History" : "View Shared History"}
         </button>
@@ -97,7 +97,7 @@ export default function PetSnapshot({
       {open && (
         <div className="mt-2">
           {loading && (
-            <p className="text-xs text-[var(--kinetic-gray)]">
+            <p className="text-xs text-[var(--fetch-gray)]">
               Loading shared history...
             </p>
           )}
@@ -123,12 +123,12 @@ export default function PetSnapshot({
                   Access Denied
                 </span>
                 {data.reasonCode && (
-                  <span className="text-xs text-[var(--kinetic-gray)]">
+                  <span className="text-xs text-[var(--fetch-gray)]">
                     ({data.reasonCode})
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[var(--kinetic-dark)]">
+              <p className="text-sm text-[var(--fetch-dark)]">
                 {data.explanation}
               </p>
             </div>
@@ -151,12 +151,12 @@ export default function PetSnapshot({
                   </div>
                 )}
 
-                <p className="text-xs font-medium text-[var(--kinetic-gray)]">
+                <p className="text-xs font-medium text-[var(--fetch-gray)]">
                   Shared history for {patientName} from other clinics:
                 </p>
 
                 {data.snapshot.length === 0 ? (
-                  <p className="text-xs text-[var(--kinetic-gray)]">
+                  <p className="text-xs text-[var(--fetch-gray)]">
                     No shared records available.
                   </p>
                 ) : (

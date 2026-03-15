@@ -76,10 +76,10 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[var(--kinetic-dark)]">
+          <h1 className="text-xl font-bold text-[var(--fetch-dark)]">
             Shared Pet History
           </h1>
-          <p className="text-sm text-[var(--kinetic-gray)] mt-1">
+          <p className="text-sm text-[var(--fetch-gray)] mt-1">
             Access shared pet history by contributing updates.
           </p>
         </div>
@@ -97,17 +97,17 @@ export default async function DashboardPage() {
           <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6" data-testid="access-progress-card">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">Your Access Level</h2>
+                <h2 className="text-sm font-semibold text-[var(--fetch-dark)]">Your Access Level</h2>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${style.bg} ${style.text}`} data-testid="tier-label">
                   {style.label}
                 </span>
               </div>
-              <span className="text-sm font-medium text-[var(--kinetic-dark)]" data-testid="access-percent">{myClinic.accessPercent}%</span>
+              <span className="text-sm font-medium text-[var(--fetch-dark)]" data-testid="access-percent">{myClinic.accessPercent}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5" data-testid="progress-bar">
               <div className={`${barColor} h-2.5 rounded-full transition-all`} style={{ width: `${myClinic.accessPercent}%` }}></div>
             </div>
-            <p className="text-xs text-[var(--kinetic-gray)] mt-2">
+            <p className="text-xs text-[var(--fetch-gray)] mt-2">
               Access decays 1% per day. Earn points by contributing clinical updates.
             </p>
           </div>
@@ -129,20 +129,20 @@ export default async function DashboardPage() {
       {/* Clinics Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
+          <h2 className="text-sm font-semibold text-[var(--fetch-dark)]">
             Clinics
           </h2>
         </div>
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100 text-left">
-              <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+              <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
                 Clinic Name
               </th>
-              <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+              <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
                 Opt-in Status
               </th>
-              <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+              <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
                 Access Tier
               </th>
             </tr>
@@ -156,7 +156,7 @@ export default async function DashboardPage() {
                   key={clinic.id}
                   className="border-b border-gray-50 last:border-b-0"
                 >
-                  <td className="px-4 py-3 text-sm text-[var(--kinetic-dark)]">
+                  <td className="px-4 py-3 text-sm text-[var(--fetch-dark)]">
                     {clinic.name}
                   </td>
                   <td className="px-4 py-3">
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
               <tr>
                 <td
                   colSpan={3}
-                  className="px-4 py-6 text-sm text-center text-[var(--kinetic-gray)]"
+                  className="px-4 py-6 text-sm text-center text-[var(--fetch-gray)]"
                 >
                   No clinics found.
                 </td>
@@ -216,17 +216,17 @@ export default async function DashboardPage() {
       {/* Pet Sharing Consent */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6">
           <div className="px-4 py-3 border-b border-gray-200">
-            <h2 className="text-sm font-semibold text-[var(--kinetic-dark)]">
+            <h2 className="text-sm font-semibold text-[var(--fetch-dark)]">
               Pet Sharing Consent
             </h2>
           </div>
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 text-left">
-                <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+                <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
                   Pet Name
                 </th>
-                <th className="px-4 py-2.5 text-xs font-medium text-[var(--kinetic-gray)] uppercase tracking-wide">
+                <th className="px-4 py-2.5 text-xs font-medium text-[var(--fetch-gray)] uppercase tracking-wide">
                   Sharing Status
                 </th>
               </tr>
@@ -234,7 +234,7 @@ export default async function DashboardPage() {
             <tbody>
               {patients.map((patient) => (
                 <tr key={patient.id} className="border-b border-gray-50 last:border-b-0">
-                  <td className="px-4 py-3 text-sm text-[var(--kinetic-dark)]">
+                  <td className="px-4 py-3 text-sm text-[var(--fetch-dark)]">
                     {patient.firstName} {patient.lastName}
                   </td>
                   <td className="px-4 py-3">

@@ -97,7 +97,7 @@ export default function AddUpdateForm({
     return (
       <button
         onClick={() => setMode("chooser")}
-        className="text-xs text-[var(--kinetic-gold)] hover:underline font-medium"
+        className="text-xs text-[var(--fetch-pink)] hover:underline font-medium"
       >
         + Add Update
       </button>
@@ -107,40 +107,40 @@ export default function AddUpdateForm({
   if (mode === "chooser") {
     return (
       <div className="mt-2 bg-gray-50 rounded-lg border border-gray-200 p-3">
-        <h4 className="text-xs font-semibold text-[var(--kinetic-dark)] mb-2">
+        <h4 className="text-xs font-semibold text-[var(--fetch-dark)] mb-2">
           Choose Update Type
         </h4>
         <div className="space-y-2">
           <button
             onClick={() => setMode("structured")}
             data-testid="chooser-structured"
-            className="w-full text-left p-2 rounded border border-gray-200 hover:border-[var(--kinetic-gold)] transition-colors"
+            className="w-full text-left p-2 rounded border border-gray-200 hover:border-[var(--fetch-pink)] transition-colors"
           >
-            <span className="text-sm font-medium text-[var(--kinetic-dark)]">
+            <span className="text-sm font-medium text-[var(--fetch-dark)]">
               Structured Continuity
             </span>
-            <span className="ml-1 text-xs text-[var(--kinetic-gold)]">(Recommended)</span>
-            <p className="text-xs text-[var(--kinetic-gray)] mt-0.5">
+            <span className="ml-1 text-xs text-[var(--fetch-pink)]">(Recommended)</span>
+            <p className="text-xs text-[var(--fetch-gray)] mt-0.5">
               Full clinical details, precautions, and treatment response
             </p>
           </button>
           <button
             onClick={() => setMode("quickHandoff")}
             data-testid="chooser-quick"
-            className="w-full text-left p-2 rounded border border-gray-200 hover:border-[var(--kinetic-gold)] transition-colors"
+            className="w-full text-left p-2 rounded border border-gray-200 hover:border-[var(--fetch-pink)] transition-colors"
           >
-            <span className="text-sm font-medium text-[var(--kinetic-dark)]">
+            <span className="text-sm font-medium text-[var(--fetch-dark)]">
               Quick Handoff
             </span>
-            <span className="ml-1 text-xs text-[var(--kinetic-gray)]">(~30s)</span>
-            <p className="text-xs text-[var(--kinetic-gray)] mt-0.5">
+            <span className="ml-1 text-xs text-[var(--fetch-gray)]">(~30s)</span>
+            <p className="text-xs text-[var(--fetch-gray)] mt-0.5">
               Region, diagnosis, treatment, and brief notes
             </p>
           </button>
         </div>
         <button
           onClick={() => { setMode("closed"); resetForm(); }}
-          className="mt-2 text-xs text-[var(--kinetic-gray)] hover:text-[var(--kinetic-dark)]"
+          className="mt-2 text-xs text-[var(--fetch-gray)] hover:text-[var(--fetch-dark)]"
         >
           Cancel
         </button>
@@ -149,12 +149,12 @@ export default function AddUpdateForm({
   }
 
   const isStructured = mode === "structured";
-  const inputClass = "w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--kinetic-gold)]";
-  const labelClass = "block text-xs font-medium text-[var(--kinetic-gray)] mb-0.5";
+  const inputClass = "w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--fetch-pink)]";
+  const labelClass = "block text-xs font-medium text-[var(--fetch-gray)] mb-0.5";
 
   return (
     <div className="mt-2 bg-gray-50 rounded-lg border border-gray-200 p-3">
-      <h4 className="text-xs font-semibold text-[var(--kinetic-dark)] mb-2">
+      <h4 className="text-xs font-semibold text-[var(--fetch-dark)] mb-2">
         {isStructured ? "Structured Continuity Update" : "Quick Handoff"}
       </h4>
       <form onSubmit={handleSubmit} className="space-y-2">
@@ -224,9 +224,9 @@ export default function AddUpdateForm({
                 type="checkbox"
                 checked={redFlags}
                 onChange={(e) => setRedFlags(e.target.checked)}
-                className="rounded border-gray-300 text-[var(--kinetic-gold)] focus:ring-[var(--kinetic-gold)]"
+                className="rounded border-gray-300 text-[var(--fetch-pink)] focus:ring-[var(--fetch-pink)]"
               />
-              <label htmlFor={`redFlags-${episodeId}`} className="text-xs font-medium text-[var(--kinetic-gray)]">
+              <label htmlFor={`redFlags-${episodeId}`} className="text-xs font-medium text-[var(--fetch-gray)]">
                 Red Flags Present
               </label>
             </div>
@@ -330,14 +330,14 @@ export default function AddUpdateForm({
           <button
             type="submit"
             disabled={loading}
-            className="px-2 py-1 bg-[var(--kinetic-gold)] text-white text-xs font-medium rounded-md hover:bg-[var(--kinetic-gold-hover)] transition-colors disabled:opacity-50"
+            className="px-2 py-1 bg-[var(--fetch-pink)] text-white text-xs font-medium rounded-md hover:bg-[var(--fetch-pink-hover)] transition-colors disabled:opacity-50"
           >
             {loading ? "Saving..." : "Save Update"}
           </button>
           <button
             type="button"
             onClick={() => { setMode("closed"); resetForm(); }}
-            className="px-2 py-1 text-xs text-[var(--kinetic-gray)] hover:text-[var(--kinetic-dark)] transition-colors"
+            className="px-2 py-1 text-xs text-[var(--fetch-gray)] hover:text-[var(--fetch-dark)] transition-colors"
           >
             Cancel
           </button>

@@ -49,7 +49,7 @@ export default function CreatePatientForm() {
       <button
         onClick={() => setIsOpen(true)}
         data-testid="create-patient-btn"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--fetch-pink)] text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity"
       >
         + Create New Pet
       </button>
@@ -58,13 +58,13 @@ export default function CreatePatientForm() {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4" data-testid="create-patient-form">
-      <h3 className="text-sm font-semibold text-[var(--kinetic-dark)] mb-3">
+      <h3 className="text-sm font-semibold text-[var(--fetch-dark)] mb-3">
         New Pet
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="patient-first-name" className="block text-xs font-medium text-[var(--kinetic-gray)] mb-1">
+            <label htmlFor="patient-first-name" className="block text-xs font-medium text-[var(--fetch-gray)] mb-1">
               First Name
             </label>
             <input
@@ -73,11 +73,11 @@ export default function CreatePatientForm() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--kinetic-gold)]"
+              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--fetch-pink)]"
             />
           </div>
           <div>
-            <label htmlFor="patient-last-name" className="block text-xs font-medium text-[var(--kinetic-gray)] mb-1">
+            <label htmlFor="patient-last-name" className="block text-xs font-medium text-[var(--fetch-gray)] mb-1">
               Last Name
             </label>
             <input
@@ -86,13 +86,13 @@ export default function CreatePatientForm() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
-              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--kinetic-gold)]"
+              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--fetch-pink)]"
             />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="patient-dob" className="block text-xs font-medium text-[var(--kinetic-gray)] mb-1">
+            <label htmlFor="patient-dob" className="block text-xs font-medium text-[var(--fetch-gray)] mb-1">
               Date of Birth
             </label>
             <input
@@ -101,11 +101,11 @@ export default function CreatePatientForm() {
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
               required
-              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--kinetic-gold)]"
+              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--fetch-pink)]"
             />
           </div>
           <div>
-            <label htmlFor="patient-phone" className="block text-xs font-medium text-[var(--kinetic-gray)] mb-1">
+            <label htmlFor="patient-phone" className="block text-xs font-medium text-[var(--fetch-gray)] mb-1">
               Phone Number
             </label>
             <input
@@ -115,7 +115,7 @@ export default function CreatePatientForm() {
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="0412345678"
               required
-              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--kinetic-gold)]"
+              className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--fetch-pink)]"
             />
           </div>
         </div>
@@ -126,14 +126,14 @@ export default function CreatePatientForm() {
           <button
             type="submit"
             disabled={submitting}
-            className="px-3 py-1.5 bg-[var(--kinetic-gold)] text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="px-3 py-1.5 bg-[var(--fetch-pink)] text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {submitting ? "Creating..." : "Create Pet"}
           </button>
           <button
             type="button"
             onClick={() => { setIsOpen(false); setError(""); }}
-            className="px-3 py-1.5 border border-gray-200 text-sm text-[var(--kinetic-gray)] rounded-md hover:bg-gray-50"
+            className="px-3 py-1.5 border border-gray-200 text-sm text-[var(--fetch-gray)] rounded-md hover:bg-gray-50"
           >
             Cancel
           </button>

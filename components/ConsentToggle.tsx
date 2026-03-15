@@ -42,7 +42,7 @@ export default function ConsentToggle({ patientId, patientName, initialConsent }
       <button
         onClick={handleToggle}
         disabled={loading}
-        className="text-xs text-[var(--kinetic-gold)] hover:underline disabled:opacity-50"
+        className="text-xs text-[var(--fetch-pink)] hover:underline disabled:opacity-50"
         data-testid={`consent-btn-${patientId}`}
       >
         {loading ? "..." : consent === "SHARE" ? "Opt Out" : "Re-enable"}

@@ -24,10 +24,10 @@ export default function Navbar({ isAdmin = false }: NavbarProps) {
           {/* Logo */}
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded bg-[var(--kinetic-gold)] flex items-center justify-center">
+              <div className="w-7 h-7 rounded bg-[var(--fetch-pink)] flex items-center justify-center">
                 <span className="text-white font-bold text-xs">K</span>
               </div>
-              <span className="font-bold text-lg text-[var(--kinetic-dark)]">
+              <span className="font-bold text-lg text-[var(--fetch-dark)]">
                 Kinetic
               </span>
             </Link>
@@ -40,8 +40,8 @@ export default function Navbar({ isAdmin = false }: NavbarProps) {
                   href={link.href}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     pathname === link.href
-                      ? "bg-[var(--kinetic-gold-light)] text-[var(--kinetic-dark)]"
-                      : "text-[var(--kinetic-gray)] hover:text-[var(--kinetic-dark)]"
+                      ? "bg-[var(--fetch-pink-light)] text-[var(--fetch-dark)]"
+                      : "text-[var(--fetch-gray)] hover:text-[var(--fetch-dark)]"
                   }`}
                 >
                   {link.label}
@@ -56,7 +56,7 @@ export default function Navbar({ isAdmin = false }: NavbarProps) {
               await signOut({ redirect: false });
               window.location.href = `${window.location.origin}/login`;
             }}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-[var(--kinetic-gold)] rounded-md hover:bg-[var(--kinetic-gold-hover)] transition-colors"
+            className="px-3 py-1.5 text-sm font-medium text-white bg-[var(--fetch-pink)] rounded-md hover:bg-[var(--fetch-pink-hover)] transition-colors"
           >
             Sign out
           </button>

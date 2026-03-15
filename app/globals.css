@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --kinetic-gold: #D4A843;
-  --kinetic-gold-light: #F5E6C8;
-  --kinetic-dark: #1a1a1a;
-  --kinetic-gray: #6b7280;
-  --kinetic-bg: #f5f5f0;
+  --fetch-pink: #EC4899;
+  --fetch-pink-hover: #DB2777;
+  --fetch-pink-light: #FCE7F3;
+  --fetch-dark: #1a1a1a;
+  --fetch-gray: #6b7280;
+  --fetch-bg: #FDF2F8;
 }

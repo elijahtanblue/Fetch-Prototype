@@ -142,7 +142,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
           <button
             onClick={handleCheckAccess}
             disabled={!!loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-[var(--kinetic-gold)] rounded-md hover:bg-[var(--kinetic-gold-hover)] disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-[var(--fetch-pink)] rounded-md hover:bg-[var(--fetch-pink-hover)] disabled:opacity-50 transition-colors"
             data-testid="check-access-btn"
           >
             {loading === "access" ? "Checking..." : "Check Access"}
@@ -193,7 +193,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
           <div className="space-y-3 max-h-[360px] overflow-y-auto" data-testid="replay-timeline">
             {replayResults.map((r, i) => (
               <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-md">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--kinetic-gold)] text-white text-xs font-bold flex items-center justify-center">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--fetch-pink)] text-white text-xs font-bold flex items-center justify-center">
                   {i + 1}
                 </div>
                 <div className="flex-1">

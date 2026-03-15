@@ -31,10 +31,10 @@ export default async function CheckAccessPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--kinetic-dark)]">
+        <h1 className="text-2xl font-bold text-[var(--fetch-dark)]">
           Check Access Console
         </h1>
-        <p className="text-sm text-[var(--kinetic-gray)] mt-1">
+        <p className="text-sm text-[var(--fetch-gray)] mt-1">
           Check access decisions across clinics, review event history, and replay access audit timelines.
         </p>
       </div>
