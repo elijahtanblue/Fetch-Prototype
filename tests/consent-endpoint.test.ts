@@ -1,5 +1,5 @@
 /**
- * Tests for PATCH /api/patients/[id]/consent
+ * Tests for PATCH /api/customers/[id]/consent
  *
  * Verifies:
  * - Auth required (401)
@@ -33,14 +33,14 @@ function makeParams(id: string) {
 }
 
 function makeRequest(body: Record<string, unknown>) {
-  return new Request("http://localhost/api/patients/p1/consent", {
+  return new Request("http://localhost/api/customers/p1/consent", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 }
 
-describe("PATCH /api/patients/[id]/consent", () => {
+describe("PATCH /api/customers/[id]/consent", () => {
   beforeEach(() => {
     mockSession = { user: { id: "u3", role: "admin", clinicId: "c3" } };
     mockPatientFindUnique.mockReset();

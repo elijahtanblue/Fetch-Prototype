@@ -81,7 +81,7 @@ describe("CreateCustomerForm", () => {
   it("shows error message on API failure", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      json: async () => ({ error: "A pet profile with this owner phone number already exists." }),
+      json: async () => ({ error: "A customer profile with this phone number already exists." }),
     });
 
     render(<CreateCustomerForm />);
