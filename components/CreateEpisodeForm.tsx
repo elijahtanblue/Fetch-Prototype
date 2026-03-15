@@ -6,6 +6,7 @@ interface Pet {
   id: string;
   firstName: string;
   lastName: string;
+  petName: string | null;
 }
 
 interface CreateEpisodeFormProps {
@@ -89,7 +90,7 @@ export default function CreateEpisodeForm({
             <option value="">Select a pet</option>
             {patients.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.firstName} {p.lastName}
+                {p.petName ? `${p.petName} (${p.firstName} ${p.lastName})` : `${p.firstName} ${p.lastName}`}
               </option>
             ))}
           </select>

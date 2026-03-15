@@ -10,6 +10,7 @@ interface Pet {
   id: string;
   firstName: string;
   lastName: string;
+  petName: string | null;
 }
 
 interface ClinicalUpdate {
