@@ -109,7 +109,7 @@ export default function SimulationPanel({ clinics, patients }: Props) {
     <div className="space-y-6">
       {/* Check Access Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Check Access Decision</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Eligibility Check</h2>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Viewing Clinic</label>

@@ -62,7 +62,7 @@ describe("SimulationPanel — Check Access Console", () => {
   test("renders Check Access Decision section with selectors", () => {
     render(<SimulationPanel clinics={mockClinics} patients={mockPatients} />);
 
-    expect(screen.getByText("Check Access Decision")).toBeInTheDocument();
+    expect(screen.getByText("Eligibility Check")).toBeInTheDocument();
     expect(screen.getByTestId("access-clinic-selector")).toBeInTheDocument();
     expect(screen.getByTestId("access-patient-selector")).toBeInTheDocument();
     expect(screen.getByTestId("check-access-btn")).toHaveTextContent("Check Access");
