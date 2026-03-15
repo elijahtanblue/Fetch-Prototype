@@ -18,15 +18,15 @@ async function main() {
 
   // Create 3 clinics
   const clinicA = await prisma.clinic.create({
-    data: { name: "City Physio", optedIn: true, accessPercent: 80, lastDecayAt: new Date() },
+    data: { name: "City Vet Clinic", optedIn: true, accessPercent: 80, lastDecayAt: new Date() },
   });
 
   const clinicB = await prisma.clinic.create({
-    data: { name: "Harbour Health", optedIn: false, accessPercent: 0 },
+    data: { name: "Harbour Vet", optedIn: false, accessPercent: 0 },
   });
 
   const clinicC = await prisma.clinic.create({
-    data: { name: "Summit Rehabilitation", optedIn: true, accessPercent: 50, lastDecayAt: new Date() },
+    data: { name: "Summit Animal Hospital", optedIn: true, accessPercent: 50, lastDecayAt: new Date() },
   });
 
   // Create 3 users (one per clinic)
@@ -70,6 +70,12 @@ async function main() {
       dateOfBirth: new Date("1985-03-15"),
       phoneNumber: "0400000001",
       clinicId: clinicA.id,
+      petName: "Buddy",
+      petType: "DOG",
+      petBreed: "Golden Retriever",
+      petGender: "Male",
+      petDesexed: true,
+      petDateOfBirth: new Date("2020-06-01"),
     },
   });
 
@@ -80,6 +86,12 @@ async function main() {
       dateOfBirth: new Date("2001-08-31"),
       phoneNumber: "0400000002",
       clinicId: clinicA.id,
+      petName: "Mochi",
+      petType: "CAT",
+      petBreed: "British Shorthair",
+      petGender: "Female",
+      petDesexed: true,
+      petDateOfBirth: new Date("2021-03-15"),
     },
   });
 

@@ -141,9 +141,9 @@ describe("Seed Integrity", () => {
       .filter((c) => c.model === "clinic")
       .map((c) => c.data.name);
 
-    expect(clinicNames).toContain("City Physio");
-    expect(clinicNames).toContain("Harbour Health");
-    expect(clinicNames).toContain("Summit Rehabilitation");
+    expect(clinicNames).toContain("City Vet Clinic");
+    expect(clinicNames).toContain("Harbour Vet");
+    expect(clinicNames).toContain("Summit Animal Hospital");
   });
 
   test("users should have unique email addresses", () => {
