@@ -20,11 +20,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { firstName, lastName, dateOfBirth, phoneNumber } = body as {
+  const {
+    firstName,
+    lastName,
+    dateOfBirth,
+    phoneNumber,
+    petName,
+    petBreed,
+    petType,
+    petDesexed,
+    petGender,
+    petDateOfBirth,
+    address,
+    insuranceCommencementDate,
+  } = body as {
     firstName?: string;
     lastName?: string;
     dateOfBirth?: string;
     phoneNumber?: string;
+    petName?: string;
+    petBreed?: string;
+    petType?: string;
+    petDesexed?: boolean;
+    petGender?: string;
+    petDateOfBirth?: string;
+    address?: string;
+    insuranceCommencementDate?: string;
   };
 
   if (!firstName || !lastName || !dateOfBirth || !phoneNumber) {
@@ -62,6 +83,16 @@ export async function POST(request: Request) {
       dateOfBirth: new Date(dateOfBirth),
       phoneNumber: phoneCleaned,
       clinicId: user.clinicId as string,
+      petName: petName ?? undefined,
+      petBreed: petBreed ?? undefined,
+      petType: petType ?? undefined,
+      petDesexed: petDesexed ?? undefined,
+      petGender: petGender ?? undefined,
+      petDateOfBirth: petDateOfBirth ? new Date(petDateOfBirth) : undefined,
+      address: address ?? undefined,
+      insuranceCommencementDate: insuranceCommencementDate
+        ? new Date(insuranceCommencementDate)
+        : undefined,
     },
   });
 
