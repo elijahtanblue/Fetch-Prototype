@@ -55,7 +55,7 @@ describe("Navbar - Sign-out behavior", () => {
   test("sign-out button has prominent gold styling", () => {
     render(<Navbar />);
     const btn = screen.getByText("Sign out");
-    expect(btn.className).toContain("bg-[var(--kinetic-gold)]");
+    expect(btn.className).toContain("bg-[var(--fetch-pink)]");
     expect(btn.className).toContain("text-white");
   });
 
